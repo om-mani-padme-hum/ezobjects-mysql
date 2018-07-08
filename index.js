@@ -449,6 +449,10 @@ function validatePropertyConfig(property) {
   
   /** Create default transform function that doesn't change the input */
   const defaultTransform = x => x;
+  
+  /** If there is no setter transform, set to default */
+  if ( typeof property.setTransform !== `function` )
+    property.setTransform = typeof property.ezobjectType == 'object' && typeof property.ezobjectType.setTransform == 'function' ? property.ezobjectType.setTransform : defaultTransform;
 
   /** If there is no save transform, set to default */
   if ( typeof property.saveTransform !== `function` )
