@@ -24,6 +24,7 @@ if ( typeof window !== `undefined` )
 else
   parent = global;
 
+/** Define default set transform for 'int' types */
 const setIntTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -33,6 +34,7 @@ const setIntTransform = (x, property) => {
   return x === null ? null : parseInt(x);
 };
 
+/** Define default set transform for 'float' types */
 const setFloatTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -42,6 +44,7 @@ const setFloatTransform = (x, property) => {
   return x === null ? null : parseFloat(x);
 };
 
+/** Define default set transform for 'string' types */
 const setStringTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -51,6 +54,7 @@ const setStringTransform = (x, property) => {
   return x === null ? null : x;
 };
 
+/** Define default set transform for 'boolean' types */
 const setBooleanTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -60,6 +64,7 @@ const setBooleanTransform = (x, property) => {
   return x === null ? null : x ? true : false;
 };
 
+/** Define default set transform for 'function' types */
 const setFunctionTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -69,6 +74,7 @@ const setFunctionTransform = (x, property) => {
   return x === null ? null : x;
 };
 
+/** Define default set transform for 'date' types */
 const setDateTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -78,6 +84,7 @@ const setDateTransform = (x, property) => {
   return x === null ? null : x;
 };
 
+/** Define default set transform for 'buffer' types */
 const setBufferTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -87,15 +94,17 @@ const setBufferTransform = (x, property) => {
   return x === null ? null : x;
 };
 
+/** Define default set transform for 'set' types */
 const setSetTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'string' )
-    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to '${property.type}' setter.`);
+  else if ( x && ( typeof x !== 'object' || x.constructor.name != 'Set' ) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed to '${property.type}' setter.`);
   
-  return x === null ? null : Array.from(new Set(x.split(`,`))).join(`,`);
+  return x === null ? null : x;
 };
 
+/** Define default set transform for all other non-array types */
 const setOtherTransform = (x, property) => {  
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${typeof property.type === 'string' ? property.originalType : property.instanceOf}' setter that doesn't allow nulls.`);
@@ -105,6 +114,7 @@ const setOtherTransform = (x, property) => {
   return x === null ? null : x;
 };
 
+/** Define default set transform for Array[int] types */
 const setIntArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -116,6 +126,7 @@ const setIntArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : parseInt(y));
 };
 
+/** Define default set transform for Array[float] types */
 const setFloatArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -127,6 +138,7 @@ const setFloatArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : parseFloat(y));
 };
 
+/** Define default set transform for Array[string] types */
 const setStringArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -138,6 +150,7 @@ const setStringArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : y);
 };
 
+/** Define default set transform for Array[boolean] types */
 const setBooleanArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -149,6 +162,7 @@ const setBooleanArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : (y ? true : false));
 };
 
+/** Define default set transform for Array[function] types */
 const setFunctionArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -160,6 +174,7 @@ const setFunctionArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : y);
 };
 
+/** Define default set transform for Array[date] types */
 const setDateArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -171,6 +186,7 @@ const setDateArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : y);
 };
 
+/** Define default set transform for Array[buffer] types */
 const setBufferArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -182,17 +198,19 @@ const setBufferArrayTransform = (x, property) => {
   return x === null ? null : x.map(y => y === null ? null : y);
 };
 
+/** Define default set transform for Array[set] types */
 const setSetArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => typeof y !== 'string' && y !== null) )
+  else if ( x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Set' ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to Array[${property.arrayOf.type}] setter.`);
   else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
 
-  return x === null ? null : x.map(y => y === null ? null : Array.from(new Set(y.split(`,`))).join(`,`));
+  return x === null ? null : x.map(y => y === null ? null : y);
 };
 
+/** Define default set transform for all other arrays of supported types */
 const setOtherArrayTransform = (x, property) => { 
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -236,7 +254,7 @@ const ezobjectTypes = [
   { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
   { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
   { type: `enum`, jsType: `string`, mysqlType: `enum`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `set`, jsType: `string`, mysqlType: `set`, default: '', hasCharacterSetAndCollate: true, setTransform: setSetTransform },
+  { type: `set`, jsType: `Set`, mysqlType: `set`, default: '', hasCharacterSetAndCollate: true, setTransform: setSetTransform, saveTransform: x => Array.from(x.values()).join(','), loadTransform: x => new Set(x.split(`,`)) },
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setBooleanTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setFunctionTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `other`, jsType: `object`, mysqlType: `int`, default: null, setTransform: setOtherTransform, saveTransform: x => x ? x.id() : -1, loadTransform: async (x, property, db) => await (new parent[typeof property.type === 'string' ? property.originalType : property.instanceOf]).load(x, db) },
@@ -270,7 +288,7 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumtext`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
   { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longtext`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `enum`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `set`, setTransform: setSetArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `set`, setTransform: setSetArrayTransform, saveTransform: x => x.map(y => Array.from(y.values()).join(`,`)).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => new Set(y.split(`,`))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setBooleanArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x.split(`,`).map(y => y ? true : false) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setFunctionArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setOtherArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x.split(`,`), i_max = list.length; i < i_max; i++ ) { if ( !isNaN(parseInt(list[i])) ) arr.push(await (new parent[typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }

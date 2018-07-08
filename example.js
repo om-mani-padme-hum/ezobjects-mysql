@@ -166,8 +166,7 @@ const example = new Example({
   mediumtextExample: `I am a bigger text up to 16 MB`,
   longtextExample: `I am a bigger text up to 4 GB`,
   enumExample: `two`,
-  setExample: `a,d,d`,
-  
+  setExample: new Set(['a', 'd', 'd']),
   booleanExample: true,
   functionExample: (arg) => { return `I am ${arg}`; },
   functionExample2: (arg) => { return `I am ${arg} stored`; },
@@ -207,8 +206,7 @@ const example = new Example({
   mediumtextArrayExample: [`I am a bigger text up to 16 MB`, `I am another bigger text up to 16 MB`],
   longtextArrayExample: [`I am a bigger text up to 4 GB`, `I am another bigger text up to 4 GB`],
   enumArrayExample: [`two`, `one`],
-  setArrayExample: [`a,d`, `a,c,d,d`],
-  
+  setArrayExample: [new Set(['a', 'd']), new Set(['a', 'c', 'd', 'd'])],
   booleanArrayExample: [false, true],
   functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
   functionArrayExample2: [(arg) => { return `I am ${arg} stored 1`; }, (arg) => { return `I am ${arg} stored 2`; }],
