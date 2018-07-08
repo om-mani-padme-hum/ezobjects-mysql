@@ -55,7 +55,6 @@ const configExample = {
     { name: `longtextExample`, type: `longtext` },
     { name: `enumExample`, type: `enum`, values: [`one`, `two`, `three`] },
     { name: `setExample`, type: `set`, values: [`a`, `b`, `c`, `d`] },
-    
     { name: `booleanExample`, type: `boolean` },
     { name: `functionExample`, type: `function` },
     { name: `functionExample2`, type: `function`, store: true },
@@ -96,7 +95,6 @@ const configExample = {
     { name: `longtextArrayExample`, type: `Array`, arrayOf: { type: `longtext` } },
     { name: `enumArrayExample`, type: `Array`, arrayOf: { type: `enum`, values: [`one`, `two`, `three`] } },
     { name: `setArrayExample`, type: `Array`, arrayOf: { type: `set`, values: [`a`, `b`, `c`, `d`] } },
-    
     { name: `booleanArrayExample`, type: `Array`, arrayOf: { type: `boolean` } },
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
     { name: `functionArrayExample2`, type: `Array`, arrayOf: { type: `function`, store: true } },
@@ -225,7 +223,7 @@ console.log(`${util.inspect(example, { depth: null })}\n`);
 
 /** Self-executing async wrapper so we can await results */
 (async () => {
-  try {
+  //try {
     /** Create table if it doesn`t already exist */
     await ezobjects.createTable(configOtherObj, db);
     
@@ -250,11 +248,11 @@ console.log(`${util.inspect(example, { depth: null })}\n`);
     /** Log the database loaded example object */
     console.log(`Database loaded example object:`);
     console.log(util.inspect(example2, { depth: null }));
-  } catch ( err ) {
+ // } catch ( err ) {
     /** Cleanly log any errors */
-    console.log(err.message);
-  } finally {
+  //  console.log(err.message);
+  //} finally {
     /** Close database connection */
     db.close();
-  }
+  //}
 })();
