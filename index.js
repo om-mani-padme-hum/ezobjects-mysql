@@ -449,18 +449,6 @@ function validatePropertyConfig(property) {
   
   /** Create default transform function that doesn't change the input */
   const defaultTransform = x => x;
-  
-  /** If there is no init transform, set to default */
-  if ( typeof property.initTransform !== `function` )
-    property.initTransform = typeof property.ezobjectType == 'object' && typeof property.ezobjectType.initTransform == 'function' ? property.ezobjectType.initTransform : defaultTransform;
-
-  /** If there is no getter transform, set to default */
-  if ( typeof property.getTransform !== `function` )
-    property.getTransform = typeof property.ezobjectType == 'object' && typeof property.ezobjectType.getTransform == 'function' ? property.ezobjectType.getTransform : defaultTransform;
-
-  /** If there is no setter transform, set to default */
-  if ( typeof property.setTransform !== `function` )
-    property.setTransform = typeof property.ezobjectType == 'object' && typeof property.ezobjectType.setTransform == 'function' ? property.ezobjectType.setTransform : defaultTransform;
 
   /** If there is no save transform, set to default */
   if ( typeof property.saveTransform !== `function` )
@@ -767,7 +755,7 @@ module.exports.createClass = (obj) => {
       /** Loop through each property in the obj */
       obj.properties.forEach((property) => {
         /** Initialize types to defaults */
-        this[property.name](property.initTransform(data[property.name]) || property.default || property.ezobjectType.default);
+        this[property.name](data[property.name] || property.default || property.ezobjectType.default);
       });
     }
   };
@@ -778,7 +766,7 @@ module.exports.createClass = (obj) => {
     parent[obj.className].prototype[property.name] = function (arg) {
       /** Getter */
       if ( arg === undefined ) 
-        return property.getTransform(this[`_${property.name}`]); 
+        return this[`_${property.name}`]; 
             
       /** Setter */
       this[`_${property.name}`] = property.setTransform(arg, property); 

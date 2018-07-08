@@ -302,8 +302,6 @@ See the following for how to configure your EZ Objects:
 * **instanceOf** - `string` - (optional) JavaScript class constructor name, or names if separated by the pipe `|` character, that the property must be an instance of \[either **type** and/or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
 * **arrayOf** - `object` - (required for type `Array`) The property configuration of the properties this array contains
-* **initTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to initializing (does not affect ezobjects defaults or custom defaults)
-* **getTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to getting
 * **setTransform(x[, type])** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
 
 ### A MySQL property configuration can also have the following:
