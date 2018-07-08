@@ -1,0 +1,4 @@
+node_modules
+mysql-config.json
+.DS_Store
+test.js
