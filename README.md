@@ -1,16 +1,15 @@
 # EZ Objects - MySQL Edition - v3.0.0
 
-# UNDERGOING UPDATE -- NOT READY FOR PRODUCTION
+# Warning: This README has only been draft prepared for v3.0.0, a full refresh will happen soon.
 
-EZ Objects is a Node.js module (that can also be usefully browserify'd) that aims to save you lots of time 
-writing class objects that are strictly typed in JavaScript, and can be tied directly to MySQL database tables
-by way of a mix of insert/update/load/delete class method signatures.  All you have to do is create simple 
-configurations for each of your objects and then create them using the createObject() function.
+EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
+you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
+MySQL database tablesby way of a mix of insert/update/load/delete class method signatures.  All you have 
+to do is create simple class configurations for each of your objects and then create them using the 
+createClass() function.
 
 * [Installation](#installation)
 * [Basic Example](#basic-example)
-* [Extending the Basic Example](#extending-the-basic-example)
-* [MySQL Example with Extended Object](#mysql-example-with-extended-object)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Module Exports](#module-exports)
@@ -20,77 +19,15 @@ configurations for each of your objects and then create them using the createObj
 
 ## Installation
 
-`npm install --save ezobjects`
+`npm install --save ezobjects-mysql`
 
 ## Basic Example
-
-```javascript
-const ezobjects = require(`ezobjects`);
-
-/** 
- * Create a customized object called DatabaseRecord on the 
- * global (node) or window (browser) namespace with a single
- * property called `id`.
- */
-ezobjects.createObject({
-  className: `DatabaseRecord`,
-  properties: [
-    { name: `id`, type: `number`, setTransform: x => parseInt(x) }
-  ]
-});
- 
-const record = new DatabaseRecord();
-
-console.log(record);
-```
-
-### Expected Output
-
-```
-DatabaseRecord { _id: 0 }
-```
-
-## Extending the Basic Example
-
-```javascript
-ezobjects.createObject({
-  className: `User`,
-  extends: DatabaseRecord,
-  properties: [
-    { name: `username`, type: `string` },
-    { name: `firstName`, type: `string` },
-    { name: `lastName`, type: `string` },
-    { name: `checkingBalance`, type: `number`, setTransform: x => parseFloat(x) },
-    { name: `permissions`, type: `Array` },
-    { name: `favoriteDay`, type: `Date` }
-  ]
-});
-
-const user = new User();
-
-console.log(user);
-```
-
-### Expected Output
-
-```
-User {
-  _id: 0,
-  _username: ``,
-  _firstName: ``,
-  _lastName: ``,
-  _checkingBalance: 0,
-  _permissions: [],
-  _favoriteDay: null }
-```
-
-## MySQL Example with Extended Object
 
 **Important Notes:** Your object must have a unique integer property named `id` to be able to use the MySQL 
 functionality of EZ Objects.  You must also use EZ Object's MySQLConnection class for your database connection.
 
 ```javascript
-const ezobjects = require(`ezobjects`);
+const ezobjects = require(`ezobjects-mysql`);
 const fs = require(`fs`);
 const moment = require(`moment`);
 
@@ -113,93 +50,54 @@ const configMySQL = JSON.parse(fs.readFileSync(`mysql-config.json`));
 const db = new ezobjects.MySQLConnection(configMySQL);
 
 /** 
- * Configure a new EZ Object called DatabaseRecord with one `id` 
- * property that contains additional MySQL configuration settings.
+ * Configure a new EZ Object called DatabaseRecord with the required 
+ * `id` property that will serve as the auto-incrementing primary index.
  */
 const configDatabaseRecord = {
   className: `DatabaseRecord`,
   properties: [
-    { 
-      name: `id`, 
-      type: `number`, 
-      mysqlType: `int`, 
-      autoIncrement: true, 
-      primary: true, 
-      setTransform: x => parseInt(x) 
-    }
+    { name: `id`, type: `int` }
   ]
 };
 
 /** 
- * Create the DatabaseRecord object -- Note: This object is not 
- * linked to a MySQL table directory, as therefore has no `tableName`
- * property, but it has the MySQL configuration properties on `id` 
- * because it will be extended by another object that is linked to 
- * a MySQL table and therefore it will need the MySQL configuration 
- * of the `id` property.
+ * Create the DatabaseRecord object -- Note: This object is not linked
+ * to a MySQL table directly, as it has no `tableName` property, but
+ * it can be extended by EZ Objects that are linked to tables.
  */
-ezobjects.createObject(configDatabaseRecord);
+ezobjects.createClass(configDatabaseRecord);
 
 /** 
- * Configure a new EZ Object called User that extends from the 
- * DatabaseRecord object and adds several additional properties and 
- * a MySQL index.
+ * Configure a new EZ Object called UserAccount that extends from the 
+ * DatabaseRecord object and adds several additional properties,
+ * including an array of `int` property and a MySQL index.
  */
-const configUser = {
-  tableName: `users`,
-  className: `User`,
+const configUserAccount = {
+  tableName: `user_accounts`,
+  className: `UserAccount`,
   extends: DatabaseRecord,
   extendsConfig: configDatabaseRecord,
   properties: [
-    {
-      name: `username`,
-      type: `string`,
-      mysqlType: `varchar`,
-      length: 20
-    },
-    { 
-      name: `firstName`, 
-      type: `string`, 
-      mysqlType: `varchar`, 
-      length: 20 
-    },
-    { 
-      name: `lastName`, 
-      type: `string`, 
-      mysqlType: `varchar`, 
-      length: 20 
-    },
-    { 
-      name: `checkingBalance`, 
-      type: `number`, 
-      mysqlType: `double`, 
-      setTransform: x => parseFloat(x) 
-    },
-    { 
-      name: `permissions`, 
-      type: `Array`, 
-      mysqlType: `text`, 
-      saveTransform: x => x.join(`,`), 
-      loadTransform: x => x.split(`,`).map(x => parseInt(x))
-    },
-    { 
-      name: `favoriteDay`, 
-      type: `Date`, 
-      mysqlType: `datetime`, 
-      saveTransform: x => moment(x).format(`Y-MM-DD HH:mm:ss`), 
-      loadTransform: x => new Date(x) 
-    }
+    { name: `username`, type: `varchar`, length: 20 },
+    { name: `firstName`, type: `varchar`, length: 20 },
+    { name: `lastName`, type: `varchar`, length: 20 },
+    { name: `checkingBalance`, type: `decimal`, length: 17, decimals: 2 },
+    { name: `permissions`, type: `Array`, arrayOf: { type: 'int' } },
+    { name: `favoriteDay`, type: `date` }
   ],
   indexes: [
-    { name: `lastName`, type: `BTREE`, columns: [ `lastName` ] }
+    { name: `username`, type: `BTREE`, columns: [ `username` ] }
   ]
 };
 
-/** Create the User object */
-ezobjects.createObject(configUser);
+/** Create the UserAccount object */
+ezobjects.createClass(configUserAccount);
 
-/** Create new user, initializing with object passed to constructor */
-const user = new User({
+/** 
+ * Create a new UserAccount called `userAccount`, initializing with 
+ * plain object passed to constructor.
+ */
+const userAccount = new UserAccount({
   username: `richlowe`,
   firstName: `Rich`,
   lastName: `Lowe`,
@@ -208,44 +106,54 @@ const user = new User({
   favoriteDay: new Date(`01-01-2018`)
 });
 
-/** Test if user is an instance of DatabaseRecord */
-console.log(ezobjects.instanceOf(user, `DatabaseRecord`));
+/** 
+ * Test if `userAccount` is an instance of DatabaseRecord using
+ * the included `instanceOf` helper function.
+ */
+console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
 
-/** Self-executing async wrapper so we can await results */
+/** Let's use a self-executing async wrapper so we can await results */
 (async () => {
   try {
-    /** Create table if it doesn`t already exist */
-    await ezobjects.createTable(db, configUser);
+    /** Create `user_accounts` table if it doesn`t already exist */
+    await ezobjects.createTable(configUserAccount, db);
 
-    /** Insert user into the database */
-    await user.insert(db);
-
-    /** Log user (should have automatically incremented ID now) */
-    console.log(user);
-
-    /** Change the property values a bit */
-    user.checkingBalance(50.27);
-    user.firstName(`Richard`);
-    user.favoriteDay(new Date(`09-01-2019`));
-
-    /** Update user in the database */
-    await user.update(db);
-
-    /** Log user (should have `checkingBalance` of 50.27) */
-    console.log(user);
-
-    /** Create another user */
-    const anotherUser = new User();
+    /** Insert `userAccount` into the database */
+    await userAccount.insert(db);
     
-    /** Assuming ID of last user was 1, load record from database */
-    await anotherUser.load(1, db);
+    /** Log `userAccount` (should have automatically incremented ID now) */
+    console.log(userAccount);
 
-    /** Log anotherUser */
-    console.log(anotherUser);
+    /** Capture ID of new record */
+    const id = userAccount.id();
+    
+    /** Change the property values a bit */
+    userAccount.checkingBalance(50.27);
+    userAccount.firstName(`Richard`);
+    userAccount.favoriteDay(new Date(`09-01-2019`));
 
-    /** Delete the user from the database */
-    await anotherUser.delete(db);
+    /** Update `userAccount` in the database */
+    await userAccount.update(db);
+
+    /** Log `userAccount` (should have `checkingBalance` of 50.27) */
+    console.log(userAccount);
+
+    /** Create another new UserAccount called `anotherUserAccount` */
+    const anotherUserAccount = new UserAccount();
+    
+    /** 
+     * Using the ID captured from the previous insert operation, load 
+     * the record from database.
+     */
+    await anotherUserAccount.load(id, db);
+
+    /** Log `anotherUserAccount` (should match last `userAccount`) */
+    console.log(anotherUserAccount);
+
+    /** Delete `anotherUserAccount` from the database */
+    await anotherUserAccount.delete(db);
   } catch ( err ) {
+    /** Cleanly log any errors */
     console.log(err.message);
   } finally {
     /** Close database connection */
@@ -258,27 +166,27 @@ console.log(ezobjects.instanceOf(user, `DatabaseRecord`));
 
 ```
 true
-User {
+UserAccount {
   _id: 1,
-  _username: `richlowe`,
-  _firstName: `Rich`,
-  _lastName: `Lowe`,
+  _username: 'richlowe',
+  _firstName: 'Rich',
+  _lastName: 'Lowe',
   _checkingBalance: 4.32,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2018-01-01T06:00:00.000Z }
-User {
+UserAccount {
   _id: 1,
-  _username: `richlowe`,
-  _firstName: `Richard`,
-  _lastName: `Lowe`,
+  _username: 'richlowe',
+  _firstName: 'Richard',
+  _lastName: 'Lowe',
   _checkingBalance: 50.27,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2019-09-01T05:00:00.000Z }
-User {
+UserAccount {
   _id: 1,
-  _username: `richlowe`,
-  _firstName: `Richard`,
-  _lastName: `Lowe`,
+  _username: 'richlowe',
+  _firstName: 'Richard',
+  _lastName: 'Lowe',
   _checkingBalance: 50.27,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2019-09-01T05:00:00.000Z }
@@ -361,59 +269,58 @@ meaning it's intended to be linked to a MySQL table:
 
 The EZ Objects module exports two functions and a MySQL class object:
 
-### ezobjects.createTable(db, objectConfig)
+### ezobjects.createTable(objectConfig, db)
 A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist
 
-### ezobjects.createObject(objectConfig)
+### ezobjects.createClass(objectConfig)
 A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
 
 ### ezobjects.MySQLConnection(mysqlConfig)
-A MySQL database connection class that wraps the standard mysql object and provides it with async/await functionality and transaction helpers
+A MySQL database connection class that wraps the [standard mysql object](https://www.npmjs.com/package/mysql) and provides it with async/await functionality and transaction helpers
 
 ## Configuration Specifications
 
 See the following for how to configure your EZ Objects:
 
-### A basic object configuration can have the following:
+### A basic MySQL object configuration can have the following:
 
 * **className** - `string` - (required) Name of the class
-* **properties** - `Array` - (required) An array of property configurations that the object (and MySQL table, if applicable) should have corresponding properties for
+* **properties** - `Array` - (optional) An array of property configurations that the object (and MySQL table, if applicable) should have corresponding properties for
 * **extends** - `mixed` - (optional) The object that the new object should be extended from \[required to extend object]
-
-### A MySQL object configuration can also have the following:
-
 * **extendsConfig** - `object` - (optional) The EZ Object configuration for the object that is being extended from \[required to extend object for use with MySQL table link]
+* **indexes** - `Array` - (optional) An array of MySQL index configurations that should be created in the MySQL table
+
+### A table-linked MySQL object configuration can also have the following:
+
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
 * **stringSearchField** - `string` - (optional) The name of a unique property of type `string` that you want to be able to load with as an alternative to `id`
-* **indexes** - `Array` - (optional) An array of MySQL index configurations that should be created in the MySQL table
 
 ### A basic property configuration can have the following:
 
 * **name** - `string` - (required) Name of the property, must conform to both JavaScript and MySQL rules
-* **type** - `string` - (optional) JavaScript data type, or types if separated by the pipe `|` character, that the property must be equal to -- types can be `string`, `number`, `boolean`, `function`, `Array`, or any valid object constructor name \[either **type** and/or **instanceOf** is required]
+* **type** - `string` - (optional) MySQL data type or any valid object constructor name \[either **type** and/or **instanceOf** is required]
 * **instanceOf** - `string` - (optional) JavaScript class constructor name, or names if separated by the pipe `|` character, that the property must be an instance of \[either **type** and/or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
+* **arrayOf** - `object` - (required for type `Array`) The property configuration of the properties this array contains
 * **initTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to initializing (does not affect ezobjects defaults or custom defaults)
 * **getTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to getting
-* **setTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to setting
+* **setTransform(x[, type])** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
 
 ### A MySQL property configuration can also have the following:
 
-* **mysqlType** - `string` - (optional) MySQL data type for the property \[required for MySQL table association]
 * **length** - `number` - (optional) MySQL data length for the property \[required for MySQL table association on some data types like VARCHAR]
 * **decimals** - `number` - (optional) Number of decimals that should be provided for certain data types when SELECT'ed from the MySQL table
-* **primary** - `boolean` - (optional) Indicates the property is a PRIMARY KEY in the MySQL table \[required for MySQL table association on at least one property in the table]
 * **unique** - `boolean` - (optional) Indicates the property is a UNIQUE KEY in the MySQL table
 * **null** - `boolean` - (optional) Indicates the property can be NULL \[default is properties must be NOT NULL]
 * **mysqlDefault** - `mixed` - (optional) Sets the default value for the property in the MySQL table, assuming its of the correct type
 * **unsigned** - `boolean` - (optional) Indicates the property should be unsigned in the MySQL table
 * **zerofill** - `boolean` - (optional) Indicates the property should be zero-filled in the MySQL table
 * **comment** - `string` - (optional) Indicates the property should note the provided comment in the MySQL table
-* **charsetName** - `string` - (optional) Indicates the property should use the provided charset in the MySQL table
-* **collationName** - `string` - (optional) Indicates the property should use the provided collation in the MySQL table
+* **characterSet** - `string` - (optional) Indicates the property should use the provided charset in the MySQL table
+* **collate** - `string` - (optional) Indicates the property should use the provided collation in the MySQL table
 * **autoIncrement** - `boolean` - (optional) Indicates the property should be auto-incremented in the MySQL table
 * **saveTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to saving in the database
-* **loadTransform(x[, db])** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the MySQL connection `db` if it was provided as the second argument of the object's `load` method. 
+* **loadTransform(x[, type[, db]])** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the expected value `type`, if needed, along with the MySQL connection `db` if it was provided as the second argument of the object's `load` method. 
 
 ### A MySQL index configuration can have the following (for MySQL table association only):
 
@@ -432,6 +339,8 @@ See the following for how to configure your EZ Objects:
 * `boolean` - false
 * `function` - function () { }
 * `Array` - []
+* `Date` - new Date(0)
+* `Buffer` - Buffer.from([])
 * Everything else - null
 
 ## Contributing

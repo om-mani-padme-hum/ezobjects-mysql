@@ -225,7 +225,7 @@ console.log(`${util.inspect(example, { depth: null })}\n`);
 
 /** Self-executing async wrapper so we can await results */
 (async () => {
-  //try {
+  try {
     /** Create table if it doesn`t already exist */
     await ezobjects.createTable(configOtherObj, db);
     
@@ -250,10 +250,11 @@ console.log(`${util.inspect(example, { depth: null })}\n`);
     /** Log the database loaded example object */
     console.log(`Database loaded example object:`);
     console.log(util.inspect(example2, { depth: null }));
-  //} catch ( err ) {
-  //  console.log(err.message);
-  //} finally {
+  } catch ( err ) {
+    /** Cleanly log any errors */
+    console.log(err.message);
+  } finally {
     /** Close database connection */
     db.close();
-  //}
+  }
 })();

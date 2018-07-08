@@ -478,7 +478,7 @@ module.exports.createTable = async (obj, db) => {
 
   /** Close property and/or index list */
   createQuery += `)`;
-  
+    
   /** Await query execution and return result */
   return await db.query(createQuery);
 };
