@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v3.0.1
+# EZ Objects - MySQL Edition - v3.0.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -14,6 +14,15 @@ createClass() function.
 * [Configuration Specifications](#configuration-specifications)
 * [Contributing](#contributing)
 * [License](#license)
+
+### Want EZ Objects Without The MySQL?
+
+EZ Object's capabilities has been split into multiple packages to target the needs of specific users.  This
+is a branch of the original `ezobjects` module that preserves the original MySQL table-linked capability,
+while the original `ezobjects` has had it removed so those who don't need to database storage can remove
+the dependency.  It also worked out better that way so that `ezobjects` types can be different than MySQL
+types, which might be different from another database's types, etc.  If you don't need MySQL capability,
+you can find the original package on [npm](https://www.npmjs.com/package/ezobjects) or [GitHub](https://github.com/om-mani-padme-hum/ezobjects.git).
 
 ## Installation
 
