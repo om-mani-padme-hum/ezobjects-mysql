@@ -841,8 +841,8 @@ module.exports.createClass = (obj) => {
 
       /** If the first argument is a valid database and the second is a number, load record from database by ID */
       else if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` && db.constructor.name == `MySQLConnection` ) {
-        if ( typeof arg1 == `string` && typeof obj.stringSearchField !== `string` )
-          throw new Error(`${obj.className}.load(): String argument is not a URL so loading from database, but no 'stringSearchField' configured.`);
+        if ( typeof arg1 == `string` && typeof obj.otherSearchField !== `string` )
+          throw new Error(`${obj.className}.load(): String argument is not a URL so loading from database, but no 'otherSearchField' configured.`);
 
         /** Begin SELECT query */
         let query = `SELECT `;
@@ -873,9 +873,9 @@ module.exports.createClass = (obj) => {
         /** Add from clause */
         query += ` FROM ${obj.tableName} `;
 
-        /** Add where clause based on whether we're searching by `id` or `stringSearchField` */
-        if ( typeof arg1 === `string` && typeof obj.stringSearchField === `string` )
-          query += `WHERE ${obj.stringSearchField} = ?`;
+        /** Add where clause based on whether we're searching by `id` or `otherSearchField` */
+        if ( typeof arg1 === `string` && typeof obj.otherSearchField === `string` )
+          query += `WHERE ${obj.otherSearchField} = ?`;
         else
           query += `WHERE id = ?`;
 

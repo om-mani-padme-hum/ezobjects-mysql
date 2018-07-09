@@ -237,12 +237,12 @@ meaning it's intended to be linked to a MySQL table:
 ### MyObject.load(mysqlRow[, db])
  * **Parameter:** mysqlRow `RowDataPacket` A MySQL `RowDataPacket` returned as part of a MySQL result set
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a second argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
 
 ### MyObject.load(obj[, db])
  * **Parameter:** obj PlainObject
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a second argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
 
 
 ### MyObject.load(id, db)
@@ -251,14 +251,14 @@ meaning it's intended to be linked to a MySQL table:
  * **Description:** Load the record in database `db`, table `tableName`, that has its `id` field equal to provided `id` parameter.
 
 ### MyObject.load(fieldValue, db)
- * **Parameter:** fieldValue - `mixed` - The value of the `stringSearchField` property of the record you wish to load
+ * **Parameter:** fieldValue - `mixed` - The value of the `otherSearchField` property of the record you wish to load
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load the record in database `db`, table `tableName`, that has its `stringSearchField` field equal to provided `fieldValue` parameter.  Here, the actual field name of `stringSearchField` is provided in the object configuration, see the configuration section below.
+ * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchField` field equal to provided `fieldValue` parameter.  Here, the actual field name of `otherSearchField` is provided in the object configuration, see the configuration section below.
 
 ### MyObject.load(url[, db])
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a second argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
  * **Note:** This signature is useful only when your classes are standalone browserify'd and requires you to implement a backend at `url` that will output the JSON.  This signature also requires you have jQuery loaded prior to use.
 
 ### MyObject.update(db)
@@ -293,7 +293,7 @@ See the following for how to configure your EZ Objects:
 ### A table-linked MySQL object configuration can also have the following:
 
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
-* **stringSearchField** - `string` - (optional) The name of a unique property of type `string` that you want to be able to load with as an alternative to `id`
+* **otherSearchField** - `string` - (optional) The name of a unique property of type `string` that you want to be able to load with as an alternative to `id`
 
 ### A basic property configuration can have the following:
 
@@ -318,7 +318,7 @@ See the following for how to configure your EZ Objects:
 * **collate** - `string` - (optional) Indicates the property should use the provided collation in the MySQL table
 * **autoIncrement** - `boolean` - (optional) Indicates the property should be auto-incremented in the MySQL table
 * **saveTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to saving in the database
-* **loadTransform(x[, type[, db]])** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the expected value `type`, if needed, along with the MySQL connection `db` if it was provided as the second argument of the object's `load` method. 
+* **loadTransform(x[, type[, db]])** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the expected value `type`, if needed, along with the MySQL connection `db` if it was provided as the third argument of the object's `load` method. 
 
 ### A MySQL index configuration can have the following (for MySQL table association only):
 
