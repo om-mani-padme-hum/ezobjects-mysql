@@ -303,7 +303,7 @@ See the following for how to configure your EZ Objects:
 * **instanceOf** - `string` - (optional) JavaScript class constructor name that the property must be an instance of \[either **type** and/or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
 * **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only custom object types are nullable
-* **arrayOf** - `string` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
+* **arrayOf** - `object` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
 `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`,
 `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  \[either **type** or **instanceOf** is required]
 * **setTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
