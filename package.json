@@ -4,7 +4,7 @@
   "description": "Easy dynamic object generation with optional MySQL table linking",
   "main": "index.js",
   "scripts": {
-    "start": "node example-mysql.js",
+    "start": "node example.js",
     "test": "eslint example.js example-mysql.js index.js mysql-connection.js"
   },
   "repository": {

@@ -11,7 +11,6 @@
 /** Require external modules */
 const url = require(`url`);
 const moment = require(`moment`);
-const util = require(`util`);
 
 /** Require local modules */
 const mysqlConnection = require(`./mysql-connection`);
@@ -24,274 +23,161 @@ if ( typeof window !== `undefined` )
 else
   parent = global;
 
-/** Define default set transform for 'int' types */
-const setIntTransform = (x, property) => {
+/** Define default set transform for non-array types */
+const setTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'number' )
+  else if ( x && property.ezobjectType.jsType == 'number' && typeof x !== 'number' )
     throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : parseInt(x);
-};
-
-/** Define default set transform for 'float' types */
-const setFloatTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'number' )
-    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : parseFloat(x);
-};
-
-/** Define default set transform for 'string' types */
-const setStringTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'string' )
+  else if ( x && property.ezobjectType.jsType == 'string' && typeof x !== 'string' )
     throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : x;
-};
-
-/** Define default set transform for 'boolean' types */
-const setBooleanTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'boolean' )
+  else if ( x && property.ezobjectType.jsType == 'boolean' && typeof x !== 'boolean' )
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : x ? true : false;
-};
-
-/** Define default set transform for 'function' types */
-const setFunctionTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && typeof x !== 'function' )
-    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to 'function' setter.`);
-  
-  return x === null ? null : x;
-};
-
-/** Define default set transform for 'date' types */
-const setDateTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && ( typeof x !== 'object' || x.constructor.name != 'Date' ) )
+  else if ( x && property.ezobjectType.jsType == 'function' && typeof x !== 'function' )
+    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to '${property.type}' setter.`);
+  else if ( x && property.ezobjectType.jsType == 'Date' && ( typeof x !== 'object' || x.constructor.type == 'Date' ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : x;
-};
-
-/** Define default set transform for 'buffer' types */
-const setBufferTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && ( typeof x !== 'object' || x.constructor.name != 'Buffer' ) )
+  else if ( x && property.ezobjectType.jsType == 'Buffer' && ( typeof x !== 'object' || x.constructor.type == 'Buffer' ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : x;
-};
-
-/** Define default set transform for 'set' types */
-const setSetTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && ( typeof x !== 'object' || x.constructor.name != 'Set' ) )
+  else if ( x && property.ezobjectType.jsType == 'Set' && ( typeof x !== 'object' || x.constructor.type == 'Set' ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed to '${property.type}' setter.`);
-  
-  return x === null ? null : x;
-};
-
-/** Define default set transform for all other non-array types */
-const setOtherTransform = (x, property) => {  
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${typeof property.type === 'string' ? property.originalType : property.instanceOf}' setter that doesn't allow nulls.`);
-  else if ( x && ( typeof x !== 'object' || ( typeof property.type == 'string' && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === 'string' && !module.exports.instanceOf(x, property.instanceOf) ) ) )
+  else if ( x && property.ezobjectType.jsType == 'object' && ( typeof x !== 'object' || ( typeof property.type == 'string' && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === 'string' && !module.exports.instanceOf(x, property.instanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === 'string' ? property.originalType : property.instanceOf}' setter.`);
   
-  return x === null ? null : x;
+  if ( property.ezobjectType.jsType == 'number' )
+    return x === null ? null : parseInt(x);
+  else if ( property.ezobjectType.jsType == 'string' || property.ezobjectType.jsType == 'function' || property.ezobjectType.jsType == 'Date' || property.ezobjectType.jsType == 'Buffer' || property.ezobjectType.jsType == 'Set' || property.ezobjectType.jsType == 'object' )
+    return x === null ? null : x;
+  else if ( property.ezobjectType.jsType == 'boolean' )
+    return x === null ? null : (x ? true : false);
 };
 
-/** Define default set transform for Array[int] types */
-const setIntArrayTransform = (x, property) => {
+/** Define default set transform for array types */
+const setArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => isNaN(y) && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to Array[${property.arrayOf.type}] setter.`);
+  else if ( !(x instanceof Array) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Array value passed to 'Array' setter.`);
   else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
+  
+  let arr = [];
+  
+  if ( property.ezobjectType.jsType == 'number' && x && x.some(y => isNaN(y) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'string' && x && x.some(y => typeof y !== 'string' && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'boolean' && x && x.some(y => typeof y !== 'boolean' && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'function' && x && x.some(y => typeof y !== 'function' && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'Date' && x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Date' ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'Buffer' && x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Buffer' ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'Set' && x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Set' ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.ezobjectType.jsType == 'object' && x && x.some(y => y !== null && (typeof y !== 'object' || ( typeof property.arrayOf.type == 'string' && y.constructor.name != property.arrayOf.type ) || ( typeof property.arrayOf.instanceOf === 'string' && !module.exports.instanceOf(y, property.arrayOf.instanceOf) ))) )
+    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
+  
+  if ( property.arrayOf.ezobjectType.hasDecimals )
+    arr = x.map(y => y === null ? null : parseFloat(y));
+  else if ( property.arrayOf.ezobjectType.jsType == 'number' )
+    arr = x.map(y => y === null ? null : parseInt(y));
+  else if ( property.arrayOf.ezobjectType.jsType == 'boolean' )
+    arr = x.map(y => y === null ? null : (y ? true : false));
+  else
+    arr = x.map(y => y === null ? null : y);
 
-  return x === null ? null : x.map(y => y === null ? null : parseInt(y));
-};
-
-/** Define default set transform for Array[float] types */
-const setFloatArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => isNaN(y) && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : parseFloat(y));
-};
-
-/** Define default set transform for Array[string] types */
-const setStringArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => typeof y !== 'string' && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
-};
-
-/** Define default set transform for Array[boolean] types */
-const setBooleanArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => typeof y !== 'boolean' && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : (y ? true : false));
-};
-
-/** Define default set transform for Array[function] types */
-const setFunctionArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => typeof y !== 'function' && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
-};
-
-/** Define default set transform for Array[date] types */
-const setDateArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Date' ) && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
-};
-
-/** Define default set transform for Array[buffer] types */
-const setBufferArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Buffer' ) && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
-};
-
-/** Define default set transform for Array[set] types */
-const setSetArrayTransform = (x, property) => {
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => ( typeof y !== 'object' || y.constructor.name != 'Set' ) && y !== null) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to Array[${property.arrayOf.type}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
-};
-
-/** Define default set transform for all other arrays of supported types */
-const setOtherArrayTransform = (x, property) => { 
-  if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
-  else if ( x && x.some(y => y !== null && (typeof y !== 'object' || ( typeof property.arrayOf.type == 'string' && y.constructor.name != property.arrayOf.type ) || ( typeof property.arrayOf.instanceOf === 'string' && !module.exports.instanceOf(y, property.arrayOf.instanceOf) ))) )
-    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to Array[${typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
-  else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf}]' setter that doesn't allow null elements.`);
-
-  return x === null ? null : x.map(y => y === null ? null : y);
+  Object.defineProperty(arr, 'push', {
+    enumerable: false,
+    value: function (x) { const newArr = Array.from(this); newArr.push(x); this.splice(0, this.length); this.push(setIntArrayTransform(newArr, property)); return this.length; }
+  });
+  
+  Object.defineProperty(arr, 'unshift', {
+    enumerable: false,
+    value: function (x) { const newArr = Array.from(this); newArr.unshift(x); this.splice(0, this.length); this.push(setIntArrayTransform(newArr, property)); return this.length; }
+  });
+  
+  Object.defineProperty(arr, 'fill', {
+    enumerable: false,
+    value: function (x, y, z) { const newArr = Array.from(this); newArr.fill(x, y, z); this.splice(0, this.length); this.push(setIntArrayTransform(newArr, property)); return this.length; }
+  });
+    
+  return x === null ? null : arr;
 };
 
 /** Define the EZ Object types, their associated JavaScript and MySQL types, defaults, quirks, transforms, etc... */
 const ezobjectTypes = [
-  { type: `bit`, jsType: 'Buffer', mysqlType: `bit`, default: Buffer.from([]), hasLength: true, setTransform: setBufferTransform, saveTransform: x => parseInt(x.join(''), 2) },
-  { type: `tinyint`, jsType: 'number', mysqlType: `tinyint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform },
-  { type: `smallint`, jsType: 'number', mysqlType: `smallint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform },
-  { type: `mediumint`, jsType: 'number', mysqlType: `mediumint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform },
-  { type: `int`, jsType: 'number', mysqlType: `int`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform },
-  { type: `integer`, jsType: 'number', mysqlType: `integer`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform },
-  { type: `bigint`, jsType: 'number', mysqlType: `bigint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setIntTransform, loadTransform: x => parseInt(x) },
-  { type: `real`, jsType: 'number', mysqlType: `real`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setFloatTransform },
-  { type: `double`, jsType: 'number', mysqlType: `double`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setFloatTransform },
-  { type: `float`, jsType: 'number', mysqlType: `float`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setFloatTransform },
-  { type: `decimal`, jsType: 'number', mysqlType: `decimal`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setFloatTransform },
-  { type: `numeric`, jsType: 'number', mysqlType: `numeric`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setFloatTransform },
-  { type: `date`, jsType: 'Date', mysqlType: `date`, default: new Date(0), saveTransform: x => moment(x).format(`YYYY-MM-DD`), loadTransform: x => new Date(x), setTransform: setDateTransform },
-  { type: `time`, jsType: `string`, mysqlType: `time`, default: '00:00:00', setTransform: setStringTransform },
-  { type: `timestamp`, jsType: 'Date', mysqlType: `timestamp`, default: new Date(0), setTransform: setDateTransform, saveTransform: x => moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`), loadTransform: x => new Date(x) },
-  { type: `datetime`, jsType: 'Date', mysqlType: `datetime`, default: new Date(0), setTransform: setDateTransform, saveTransform: x => moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`), loadTransform: x => new Date(x) },
-  { type: `year`, jsType: `number`, mysqlType: `year`, default: 1970, setTransform: setIntTransform },
-  { type: `char`, jsType: `string`, mysqlType: `char`, default: '', hasLength: true, hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `varchar`, jsType: `string`, mysqlType: `varchar`, default: '', hasLength: true, lengthRequired: true, hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `binary`, jsType: `Buffer`, mysqlType: `binary`, default: Buffer.from([]), hasLength: true, setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `varbinary`, jsType: `Buffer`, mysqlType: `varbinary`, default: Buffer.from([]), lengthRequired: true, hasLength: true, setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `tinyblob`, jsType: `Buffer`, mysqlType: `tinyblob`, default: Buffer.from([]), setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `blob`, jsType: `Buffer`, mysqlType: `blob`, default: Buffer.from([]), hasLength: true, setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `mediumblob`, jsType: `Buffer`, mysqlType: `mediumblob`, default: Buffer.from([]), setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `longblob`, jsType: `Buffer`, mysqlType: `longblob`, default: Buffer.from([]), setTransform: setBufferTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
-  { type: `tinytext`, jsType: `string`, mysqlType: `tinytext`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `text`, jsType: `string`, mysqlType: `text`, default: '', hasLength: true, hasCharacterSetAndCollate: true, setTransform: setStringTransform},
-  { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `enum`, jsType: `string`, mysqlType: `enum`, default: '', hasCharacterSetAndCollate: true, setTransform: setStringTransform },
-  { type: `set`, jsType: `Set`, mysqlType: `set`, default: '', hasCharacterSetAndCollate: true, setTransform: setSetTransform, saveTransform: x => Array.from(x.values()).join(','), loadTransform: x => new Set(x.split(`,`)) },
-  { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setBooleanTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
-  { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setFunctionTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
-  { type: `other`, jsType: `object`, mysqlType: `int`, default: null, setTransform: setOtherTransform, saveTransform: x => x ? x.id() : -1, loadTransform: async (x, property, db) => await (new parent[typeof property.type === 'string' ? property.originalType : property.instanceOf]).load(x, db) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `smallint`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `mediumint`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `int`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `integer`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `bigint`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `real`, setTransform: setFloatArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `double`, setTransform: setFloatArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `float`, setTransform: setFloatArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `decimal`, setTransform: setFloatArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `numeric`, setTransform: setFloatArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `date`, setTransform: setDateArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `time`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `timestamp`, setTransform: setDateArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `datetime`, setTransform: setDateArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `year`, setTransform: setIntArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `char`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `varchar`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `binary`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `varbinary`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `tinyblob`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `blob`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumblob`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longblob`, setTransform: setBufferArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `tinytext`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `text`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumtext`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longtext`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `enum`, setTransform: setStringArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `set`, setTransform: setSetArrayTransform, saveTransform: x => x.map(y => Array.from(y.values()).join(`,`)).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => new Set(y.split(`,`))) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setBooleanArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x.split(`,`).map(y => y ? true : false) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setFunctionArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => eval(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setOtherArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x.split(`,`), i_max = list.length; i < i_max; i++ ) { if ( !isNaN(parseInt(list[i])) ) arr.push(await (new parent[typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }
+  { type: `bit`, jsType: 'Buffer', mysqlType: `bit`, default: Buffer.from([]), hasLength: true, setTransform: setTransform, saveTransform: x => parseInt(x.join(''), 2) },
+  { type: `tinyint`, jsType: 'number', mysqlType: `tinyint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `smallint`, jsType: 'number', mysqlType: `smallint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `mediumint`, jsType: 'number', mysqlType: `mediumint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `int`, jsType: 'number', mysqlType: `int`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `integer`, jsType: 'number', mysqlType: `integer`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `bigint`, jsType: 'number', mysqlType: `bigint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, loadTransform: x => parseInt(x) },
+  { type: `real`, jsType: 'number', mysqlType: `real`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
+  { type: `double`, jsType: 'number', mysqlType: `double`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
+  { type: `float`, jsType: 'number', mysqlType: `float`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
+  { type: `decimal`, jsType: 'number', mysqlType: `decimal`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `numeric`, jsType: 'number', mysqlType: `numeric`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `date`, jsType: 'Date', mysqlType: `date`, default: new Date(0), saveTransform: x => moment(x).format(`YYYY-MM-DD`), loadTransform: x => new Date(x), setTransform: setTransform },
+  { type: `time`, jsType: `string`, mysqlType: `time`, default: '00:00:00', setTransform: setTransform },
+  { type: `timestamp`, jsType: 'Date', mysqlType: `timestamp`, default: new Date(0), setTransform: setTransform, saveTransform: x => moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`), loadTransform: x => new Date(x) },
+  { type: `datetime`, jsType: 'Date', mysqlType: `datetime`, default: new Date(0), setTransform: setTransform, saveTransform: x => moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`), loadTransform: x => new Date(x) },
+  { type: `year`, jsType: `number`, mysqlType: `year`, default: 1970, setTransform: setTransform },
+  { type: `char`, jsType: `string`, mysqlType: `char`, default: '', hasLength: true, hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `varchar`, jsType: `string`, mysqlType: `varchar`, default: '', hasLength: true, lengthRequired: true, hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `binary`, jsType: `Buffer`, mysqlType: `binary`, default: Buffer.from([]), hasLength: true, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `varbinary`, jsType: `Buffer`, mysqlType: `varbinary`, default: Buffer.from([]), lengthRequired: true, hasLength: true, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `tinyblob`, jsType: `Buffer`, mysqlType: `tinyblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `blob`, jsType: `Buffer`, mysqlType: `blob`, default: Buffer.from([]), hasLength: true, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `mediumblob`, jsType: `Buffer`, mysqlType: `mediumblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `longblob`, jsType: `Buffer`, mysqlType: `longblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
+  { type: `tinytext`, jsType: `string`, mysqlType: `tinytext`, default: '', hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `text`, jsType: `string`, mysqlType: `text`, default: '', hasLength: true, hasCharacterSetAndCollate: true, setTransform: setTransform},
+  { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: '', hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `enum`, jsType: `string`, mysqlType: `enum`, default: '', hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `set`, jsType: `Set`, mysqlType: `set`, default: '', hasCharacterSetAndCollate: true, setTransform: setTransform, saveTransform: x => Array.from(x.values()).join(','), loadTransform: x => new Set(x.split(`,`)) },
+  { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
+  { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
+  { type: `other`, jsType: `object`, mysqlType: `int`, default: null, setTransform: setTransform, saveTransform: x => x ? x.id() : -1, loadTransform: async (x, property, db) => await (new parent[typeof property.type === 'string' ? property.originalType : property.instanceOf]).load(x, db) },
+  
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `smallint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `mediumint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `int`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `integer`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `bigint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `real`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `double`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `float`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `decimal`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `numeric`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `date`, setTransform: setArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `time`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `timestamp`, setTransform: setArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `datetime`, setTransform: setArrayTransform, saveTransform: x => x.map(y => moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`)).join(`,`), loadTransform: x => x.split(`,`).map(y => new Date(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `year`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `char`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `varchar`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `binary`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `varbinary`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `tinyblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `blob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `tinytext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `text`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `enum`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `set`, setTransform: setArrayTransform, saveTransform: x => x.map(y => Array.from(y.values()).join(`,`)).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => new Set(y.split(`,`))) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x.split(`,`).map(y => y ? true : false) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x.split(`!&|&!`).map(y => eval(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x.split(`,`), i_max = list.length; i < i_max; i++ ) { if ( !isNaN(parseInt(list[i])) ) arr.push(await (new parent[typeof property.arrayOf.type === 'string' ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }
 ];
 
 /** Validate configuration for a single property */
@@ -325,16 +211,16 @@ function validatePropertyConfig(property) {
     property.type = property.type.toLowerCase();
   }
   
-  /** If type is 'ARRAY' with no 'arrayOf', throw error */
-  if ( property.type == 'array' && ( typeof property.arrayOf !== 'object' || property.arrayOf.constructor.name != 'Object' ) )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf'.`);
-  
-  /** If type is 'ARRAY' with 'arrayOf' containing bad or missing type, throw error */
-  if ( property.type == 'array' && typeof property.arrayOf.type != 'string' && typeof property.arrayOf.instanceOf != 'string' )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
-  
   /** Attach arrayOf 'ezobjectType' if property type is 'array' */
   if ( property.type == 'array' ) {
+    /** If type is 'ARRAY' with no 'arrayOf', throw error */
+    if ( typeof property.arrayOf !== 'object' || property.arrayOf.constructor.name != 'Object' )
+      throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf'.`);
+
+    /** If type is 'ARRAY' with 'arrayOf' containing bad or missing type, throw error */
+    if ( typeof property.arrayOf.type != 'string' && typeof property.arrayOf.instanceOf != 'string' )
+      throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
+
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
     property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
 
@@ -587,7 +473,7 @@ module.exports.createTable = async (obj, db) => {
 
       /** Properties with UNIQUE KEY */
       if ( property.unique )
-        createQuery += ` UNIQUE`;
+        createQuery += ` UNIQUE KEY`;
 
       /** Properties with PRIMARY KEY */
       if ( property.name == 'id' )
