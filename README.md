@@ -297,7 +297,7 @@ See the following for how to configure your EZ Objects:
 ### A basic property configuration can have the following:
 
 * **name** - `string` - (required) Name of the property, must conform to both JavaScript and MySQL rules
-* **type** - `string` - (optional) JavaScript data type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
+* **type** - `string` - (optional) EZ Object type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
 `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`,
 `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
 * **instanceOf** - `string` - (optional) JavaScript class constructor name, or names if separated by the pipe `|` character, that the property must be an instance of \[either **type** and/or **instanceOf** is required]
