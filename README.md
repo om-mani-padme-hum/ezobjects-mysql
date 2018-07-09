@@ -310,7 +310,7 @@ See the following for how to configure your EZ Objects:
 
 ### A MySQL property configuration can also have the following:
 
-* **length** - `number` - (optional) MySQL data length for the property \[required for MySQL table association on some data types like VARCHAR]
+* **length** - `number` - (optional) MySQL data length for the property \[required for MySQL table association on some data types like VARCHAR, optional for others where it determines displayed numeric precision when SELECT'ed like FLOAT]
 * **decimals** - `number` - (optional) Number of decimals that should be provided for certain data types when SELECT'ed from the MySQL table
 * **unique** - `boolean` - (optional) Indicates the property is a UNIQUE KEY in the MySQL table
 * **unsigned** - `boolean` - (optional) Indicates the property should be unsigned in the MySQL table
