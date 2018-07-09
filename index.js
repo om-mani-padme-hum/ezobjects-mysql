@@ -44,12 +44,14 @@ const setTransform = (x, property) => {
   else if ( x && property.ezobjectType.jsType == 'object' && ( typeof x !== 'object' || ( typeof property.type == 'string' && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === 'string' && !module.exports.instanceOf(x, property.instanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === 'string' ? property.originalType : property.instanceOf}' setter.`);
   
-  if ( property.ezobjectType.jsType == 'number' )
+  if ( property.ezobjectType.hasDecimals )
+    return x === null ? null : parseFloat(x);
+  else if ( property.ezobjectType.jsType == 'number' )
     return x === null ? null : parseInt(x);
-  else if ( property.ezobjectType.jsType == 'string' || property.ezobjectType.jsType == 'function' || property.ezobjectType.jsType == 'Date' || property.ezobjectType.jsType == 'Buffer' || property.ezobjectType.jsType == 'Set' || property.ezobjectType.jsType == 'object' )
-    return x === null ? null : x;
   else if ( property.ezobjectType.jsType == 'boolean' )
     return x === null ? null : (x ? true : false);
+  else
+    return x === null ? null : x;
 };
 
 /** Define default set transform for array types */
