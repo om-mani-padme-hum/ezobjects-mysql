@@ -718,7 +718,7 @@ module.exports.createClass = (obj) => {
               return;
 
             /** Add property to params array after performing the save transform */
-            params.push(property.saveTransform(this[property.name]()));
+            params.push(property.saveTransform(this[property.name](), property));
           });
         };
 
@@ -984,7 +984,7 @@ module.exports.createClass = (obj) => {
               return;
 
             /** Add property to params array after performing the save transform */
-            params.push(property.saveTransform(this[property.name]()));
+            params.push(property.saveTransform(this[property.name](), property));
           });
         };
 

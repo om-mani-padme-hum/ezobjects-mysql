@@ -29,7 +29,6 @@ functionality of EZ Objects.  You must also use EZ Object's MySQLConnection clas
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
 const fs = require(`fs`);
-const moment = require(`moment`);
 
 /** 
  * Load external MySQL configuration which uses the following JSON 
@@ -298,27 +297,30 @@ See the following for how to configure your EZ Objects:
 ### A basic property configuration can have the following:
 
 * **name** - `string` - (required) Name of the property, must conform to both JavaScript and MySQL rules
-* **type** - `string` - (optional) MySQL data type or any valid object constructor name \[either **type** and/or **instanceOf** is required]
+* **type** - `string` - (optional) JavaScript data type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
+`timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`,
+`text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
 * **instanceOf** - `string` - (optional) JavaScript class constructor name, or names if separated by the pipe `|` character, that the property must be an instance of \[either **type** and/or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
-* **arrayOf** - `object` - (required for type `Array`) The property configuration of the properties this array contains
-* **setTransform(x[, type])** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
+* **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only custom object types are nullable
+* **arrayOf** - `string` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
+`timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`,
+`text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  \[either **type** or **instanceOf** is required]
+* **setTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
 
 ### A MySQL property configuration can also have the following:
 
 * **length** - `number` - (optional) MySQL data length for the property \[required for MySQL table association on some data types like VARCHAR]
 * **decimals** - `number` - (optional) Number of decimals that should be provided for certain data types when SELECT'ed from the MySQL table
 * **unique** - `boolean` - (optional) Indicates the property is a UNIQUE KEY in the MySQL table
-* **null** - `boolean` - (optional) Indicates the property can be NULL \[default is properties must be NOT NULL]
-* **mysqlDefault** - `mixed` - (optional) Sets the default value for the property in the MySQL table, assuming its of the correct type
 * **unsigned** - `boolean` - (optional) Indicates the property should be unsigned in the MySQL table
 * **zerofill** - `boolean` - (optional) Indicates the property should be zero-filled in the MySQL table
 * **comment** - `string` - (optional) Indicates the property should note the provided comment in the MySQL table
 * **characterSet** - `string` - (optional) Indicates the property should use the provided charset in the MySQL table
 * **collate** - `string` - (optional) Indicates the property should use the provided collation in the MySQL table
 * **autoIncrement** - `boolean` - (optional) Indicates the property should be auto-incremented in the MySQL table
-* **saveTransform(x)** - `function` - (optional) Function that transforms and returns the property value prior to saving in the database
-* **loadTransform(x[, type[, db]])** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the expected value `type`, if needed, along with the MySQL connection `db` if it was provided as the third argument of the object's `load` method. 
+* **saveTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to saving in the database
+* **loadTransform(x, propertyConfig, db)** - `function` - (optional) Function that transforms and returns the property value after loading from the database.  The handler for this transform will be passed the expected value `type`, if needed, along with the MySQL connection `db` if it was provided as the third argument of the object's `load` method. 
 
 ### A MySQL index configuration can have the following (for MySQL table association only):
 
@@ -332,14 +334,41 @@ See the following for how to configure your EZ Objects:
 
 ### Default intiailizations for different JavaScript types
 
-* `number` - 0
-* `string` - ``
-* `boolean` - false
-* `function` - function () { }
-* `Array` - []
-* `Date` - new Date(0)
-* `Buffer` - Buffer.from([])
-* Everything else - null
+* `bit` - `Buffer.from([])`
+* `tinyint` - `0`
+* `smallint` - `0`
+* `mediumint` - `0`
+* `int` - `0`
+* `integer` - `0`
+* `bigint` - `0`
+* `real` - `0`
+* `double` - `0`
+* `float` - `0`
+* `decimal` - `0`
+* `numeric` - `0`
+* `date` - `new Date(0)`
+* `time` - `00:00:00`
+* `timestamp` - ``
+* `datetime` - `new Date(0)`
+* `year` - `0`
+* `char` - ``
+* `varchar` - ``
+* `binary` - `Buffer.from([])`
+* `varbinary` - `Buffer.from([])`
+* `tinyblob` - `Buffer.from([])`
+* `blob` - `Buffer.from([])`
+* `mediumblob` - `Buffer.from([])`
+* `longblob` - `Buffer.from([])`
+* `tinytext` - ``
+* `text` - ``
+* `mediumtext` - ``
+* `longtext` - ``
+* `enum` - ``
+* `set` - `new Set()`
+* `boolean` - `false`
+* `function` - `function () { }`
+* All `array` types - `[]`
+* All other types - `null`
 
 ## Contributing
 
