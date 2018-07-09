@@ -286,7 +286,7 @@ See the following for how to configure your EZ Objects:
 * **className** - `string` - (required) Name of the class
 * **properties** - `Array` - (optional) An array of property configurations that the object (and MySQL table, if applicable) should have corresponding properties for
 * **extends** - `mixed` - (optional) The object that the new object should be extended from \[required to extend object]
-* **extendsConfig** - `object` - (optional) The EZ Object configuration for the object that is being extended from \[required to extend object for use with MySQL table link]
+* **extendsConfig** - `object` - (optional) The EZ Object configuration for the object that is being extended from \[required to extend object]
 * **indexes** - `Array` - (optional) An array of MySQL index configurations that should be created in the MySQL table
 
 ### A table-linked MySQL object configuration can also have the following:
