@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/om-mani-padme-hum/ezobjects.git"
+    "url": "git+https://github.com/om-mani-padme-hum/ezobjects-mysql.git"
   },
   "keywords": [
     "easy",
@@ -40,9 +40,9 @@
     "docket-parser": "^0.6.7"
   },
   "bugs": {
-    "url": "https://github.com/om-mani-padme-hum/ezobjects/issues"
+    "url": "https://github.com/om-mani-padme-hum/ezobjects-mysql/issues"
   },
-  "homepage": "https://github.com/om-mani-padme-hum/ezobjects#readme",
+  "homepage": "https://github.com/om-mani-padme-hum/ezobjects-mysql#readme",
   "directories": {
     "doc": "docs"
   }
