@@ -97,17 +97,17 @@ const setArrayTransform = (x, property) => {
 
   Object.defineProperty(arr, 'push', {
     enumerable: false,
-    value: function (x) { const newArr = Array.from(this); newArr.push(x); this.splice(0, this.length); this.push(setArrayTransform(newArr, property)); return this.length; }
+    value: function (x) { const newArr = Array.from(this); newArr.push(x); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
   });
   
   Object.defineProperty(arr, 'unshift', {
     enumerable: false,
-    value: function (x) { const newArr = Array.from(this); newArr.unshift(x); this.splice(0, this.length); this.push(setArrayTransform(newArr, property)); return this.length; }
+    value: function (x) { const newArr = Array.from(this); newArr.unshift(x); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
   });
   
   Object.defineProperty(arr, 'fill', {
     enumerable: false,
-    value: function (x, y, z) { const newArr = Array.from(this); newArr.fill(x, y, z); this.splice(0, this.length); this.push(setArrayTransform(newArr, property)); return this.length; }
+    value: function (x, y, z) { const newArr = Array.from(this); newArr.fill(x, y, z); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
   });
     
   return x === null ? null : arr;
