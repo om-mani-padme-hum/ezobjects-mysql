@@ -923,7 +923,7 @@ module.exports.createClass = (obj) => {
       } 
 
       /** If the first argument is a MySQL RowDataPacket, load from row data */
-      else if ( typeof arg1 == `object` && ( arg1.constructor.name == `RowDataPacket` || arg1.constructor.name == `Object` ) ) {
+      else if ( typeof arg1 == `object` && ( arg1.constructor.name == `RowDataPacket` || arg1.constructor.name == `Object` ) ) {        
         /** Create helper method for recursively loading property values into object */
         const loadProperties = async (obj) => {
           /** If this object extends another, recursively add extended property values into objecct */
@@ -933,15 +933,15 @@ module.exports.createClass = (obj) => {
           /** Loop through each property */
           for ( let i = 0, i_max = obj.properties.length; i < i_max; i++ ) {
             /** Don't attempt to load properties that are not stored in the database */
-            if ( !property.store )
+            if ( !obj.properties[i].store )
               continue;
             
             /** Append property in object */
-            if ( typeof arg1[property.name] !== `undefined` ) {
+            if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {              
               if ( typeof db == 'object' && db.constructor.name == 'MySQLConnection' )
-                this[property.name](await property.loadTransform(arg1[property.name], property, db));
+                this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
               else
-                this[property.name](await property.loadTransform(arg1[property.name], property));
+                this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i]));
             }
           }
         };
