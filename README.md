@@ -1,8 +1,8 @@
-# EZ Objects - MySQL Edition - v3.0.2
+# EZ Objects - MySQL Edition - v3.0.3
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
-MySQL database tablesby way of a mix of insert/update/load/delete class method signatures.  All you have 
+MySQL database tables by way of a mix of insert/update/load/delete class method signatures.  All you have 
 to do is create simple class configurations for each of your objects and then create them using the 
 createClass() function.
 
@@ -19,10 +19,10 @@ createClass() function.
 
 EZ Object's capabilities has been split into multiple packages to target the needs of specific users.  This
 is a branch of the original `ezobjects` module that preserves the original MySQL table-linked capability,
-while the original `ezobjects` has had it removed so those who don't need to database storage can remove
+while the original `ezobjects` has had it removed so those who don't need the database storage can remove
 the dependency.  It also worked out better that way so that `ezobjects` types can be different than MySQL
 types, which might be different from another database's types, etc.  If you don't need MySQL capability,
-you can find the original package on [npm](https://www.npmjs.com/package/ezobjects) or [GitHub](https://github.com/om-mani-padme-hum/ezobjects.git).
+you can find the original `ezobjects` package on [npm](https://www.npmjs.com/package/ezobjects) or [GitHub](https://github.com/om-mani-padme-hum/ezobjects.git).
 
 ## Installation
 
@@ -30,8 +30,11 @@ you can find the original package on [npm](https://www.npmjs.com/package/ezobjec
 
 ## Basic Example
 
-**Important Notes:** Your object must have a unique integer property named `id` to be able to use the MySQL 
-functionality of EZ Objects.  You must also use EZ Object's MySQLConnection class for your database connection.
+**Important Notes:** Each of your EZ Object tables must include an `int` or `integer` property named 
+`id` that will be automatically configured to serve as an auto-incrementing primary index in the MySQL 
+table that you are linking your object to.  The `load` method will generally be based off hte `id` field,
+unless you specify a `stringSearchField`.  Also note that ou must also use EZ Object's MySQLConnection class 
+for your database connection for compatability purposes and to allow async/await functionality.
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
@@ -204,18 +207,17 @@ These are the object method signatures even the most basic of EZ Objects will ha
 
 ### new MyObject([data])
  * **Parameter:** data - `PlainObject` - (optional)
- * **Description:** Create a new MyObject object and initialize it using either defaults or any provided key/value pairs in the plain object `data`.  Keys can either be equal to the name of a property, or they can be have an underscore before the name of a property, as would be the case if you were to JSON.stringify() and then JSON.parse() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.
+ * **Description:** Create a new MyObject object and initialize it using either defaults or any provided key/value pairs in the plain object `data`.  Keys can either be equal to the name of a property, or they can have an underscore before the name of a property, as would be the case if you were to JSON.stringify() and then JSON.parse() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.
 
 ### new MyObject([data])
  * **Parameter:** data - `string` - (optional)
- * **Description:** Create a new MyObject object and initialize it using either defaults or any provided key/value pairs in the JSON encoded string `data`.  Keys can either be equal to the name of a property, or they can be have an underscore before the name of a property, as would be the case if you were to JSON.stringify() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.
+ * **Description:** Create a new MyObject object and initialize it using either defaults or any provided key/value pairs in the JSON encoded string `data`.  Keys can either be equal to the name of a property, or they can have an underscore before the name of a property, as would be the case if you were to JSON.stringify() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.
 
 ### MyObject.init([data])
  * **Parameter:** data - `PlainObject`
  * **Description:** Initialize this object using either defaults or any provided key/value pairs in the plain object `data`.  This is also the method used by the constructor.
  
-In addition, each property you define will have a single method that is a getter and setter, and 
-it will have the following signatures:
+In addition, each property you define will have a single method that is a getter and setter, and it will have the following signatures:
 
 ### MyObject.myProperty()
  * **Returns:** `mixed`
