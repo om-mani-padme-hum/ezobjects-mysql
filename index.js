@@ -95,19 +95,23 @@ const setArrayTransform = (x, property) => {
   else
     arr = x.map(y => y === null ? null : y);
 
+  Object.defineProperty(arr, 'origPush', { enumerable: false, value: arr.push });
+  Object.defineProperty(arr, 'origUnshift', { enumerable: false, value: arr.unshift });
+  Object.defineProperty(arr, 'origFill', { enumerable: false, value: arr.fill });
+  
   Object.defineProperty(arr, 'push', {
     enumerable: false,
-    value: function (x) { const newArr = Array.from(this); newArr.push(x); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
+    value: function () { for ( let i = 0, i_max = arguments.length; i < i_max; i++ ) this.origPush(setTransform(arguments[i], property)); return this.length; }
   });
   
   Object.defineProperty(arr, 'unshift', {
     enumerable: false,
-    value: function (x) { const newArr = Array.from(this); newArr.unshift(x); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
+    value: function () { for ( let i = 0, i_max = arguments.length; i < i_max; i++ ) this.origUnshift(setTransform(arguments[i], property)); return this.length; }
   });
   
   Object.defineProperty(arr, 'fill', {
     enumerable: false,
-    value: function (x, y, z) { const newArr = Array.from(this); newArr.fill(x, y, z); this.splice(0, this.length); this.concat(setArrayTransform(newArr, property)); return this.length; }
+    value: function (value, start, end) { return this.origFill(setTransform(value, property), start, end); }
   });
     
   return x === null ? null : arr;
