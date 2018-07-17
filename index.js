@@ -676,7 +676,9 @@ module.exports.createClass = (obj) => {
       /** Return this object for set call chaining */
       return this; 
     };
-    
+  });
+  
+  if ( typeof obj.tableName == `string` && obj.tableName.match(/[a-z_]+/) ) {
     /** Create MySQL delete method on prototype */
     parent[obj.className].prototype.delete = async function (db) { 
       /** If the argument is a valid database, delete the record */
@@ -1047,7 +1049,7 @@ module.exports.createClass = (obj) => {
       /** Allow for call chaining */
       return this;
     };
-  });
+  }
   
   /** 
    * Because we`re creating this object dynamically, we need to manually give it a name 
