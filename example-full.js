@@ -126,14 +126,24 @@ const configOtherObj = {
 /** Create the OtherObj class */
 ezobjects.createClass(configOtherObj);
 
-/** Create a simple extended object for use in the example */
-ezobjects.createClass({
+/** Configure an extended object for use in the example */
+const configExtendedObj = {
   className: `ExtendedObj`,
   tableName: `extendedObjects`,
   extends: OtherObj,
   extendsConfig: configOtherObj,
-}); 
+};
 
+/** Create the ExtendedObj class */
+ezobjects.createClass(configExtendedObj); 
+
+const otherObj1 = new OtherObj({ name: `Type Example 1` });
+const otherObj2 = new OtherObj({ name: `Type Example 2` });
+const extendedObj1 = new ExtendedObj({ name: `Instance Example Stored 1` });
+const extendedObj2 = new ExtendedObj({ name: `Instance Example Stored 2` });
+const extendedObj3 = new ExtendedObj({ name: `Instance Example Not Stored 1` });
+const extendedObj4 = new ExtendedObj({ name: `Instance Example Not Stored 2` });
+                                     
 /** Create new example object, initializing with object passed to constructor */
 const example = new Example({
   bitExample: Buffer.from([0b1, 0b0]),
@@ -173,9 +183,9 @@ const example = new Example({
   functionExample: (arg) => { return `I am ${arg}`; },
   functionExample2: (arg) => { return `I am ${arg} stored`; },
   plainObjectExample: { a: 'I am A', 14: 'Plain Object' },
-  ezobjectTypeExample: new OtherObj({ name: `Type Example` }),
-  ezobjectInstanceExample: new ExtendedObj({ name: `Instance Example Stored` }),
-  ezobjectInstanceExample2: new ExtendedObj({ name: `Instance Example Not Stored` }),
+  ezobjectTypeExample: otherObj1,
+  ezobjectInstanceExample: extendedObj1,
+  ezobjectInstanceExample2: extendedObj3,
 
   bitArrayExample: [Buffer.from([0b1, 0b0]), Buffer.from([0b0, 0b1])],
   tinyintArrayExample: [-128, 128],
@@ -214,23 +224,38 @@ const example = new Example({
   functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
   functionArrayExample2: [(arg) => { return `I am ${arg} stored 1`; }, (arg) => { return `I am ${arg} stored 2`; }],
   plainObjectArrayExample: [{ a: 'I am A', 14: 'Plain Object' }, { and: 'So am I too a', 930: 'Plain Object' }],
-  ezobjectTypeArrayExample: [new OtherObj({ name: `Type Example 1` }), new OtherObj({ name: `Type Example 2` })],
-  ezobjectInstanceArrayExample: [new ExtendedObj({ name: `Instance Example Stored 1` }), new ExtendedObj({ name: `Instance Example Stored 2` })],
-  ezobjectInstanceArrayExample2: [new ExtendedObj({ name: `Instance Example Not Stored 1` }), new ExtendedObj({ name: `Instance Example Not Stored 2` })]
+  ezobjectTypeArrayExample: [otherObj1, otherObj2],
+  ezobjectInstanceArrayExample: [extendedObj1, extendedObj2],
+  ezobjectInstanceArrayExample2: [extendedObj3, extendedObj4]
 });
-
-/** Log the initialized example object */
-console.log(`Initialized example object:`);
-console.log(`${util.inspect(example, { depth: null })}\n`);
 
 /** Self-executing async wrapper so we can await results */
 (async () => {
   try {
-    /** Create table if it doesn`t already exist */
+    /** Create example table if it doesn`t already exist */
+    await ezobjects.createTable(configExample, db);
+    
+    /** Create other object table if it doesn`t already exist */
     await ezobjects.createTable(configOtherObj, db);
     
-    /** Create table if it doesn`t already exist */
-    await ezobjects.createTable(configExample, db);
+    /** Create extended object table if it doesn`t already exist */
+    await ezobjects.createTable(configExtendedObj, db);
+
+    /** 
+     * Insert other objects and extended objects into the database.
+     * 
+     * Note: This must be done before inserting the example so that
+     * the other objects and extended objects have ID's to store!
+     **/
+    await otherObj1.insert(db);
+    await extendedObj1.insert(db);
+    await extendedObj2.insert(db);
+    await extendedObj3.insert(db);
+    await extendedObj4.insert(db);
+    
+    /** Log the initialized example object */
+    console.log(`Initialized example object:`);
+    console.log(`${util.inspect(example, { depth: null })}\n`);
 
     /** Insert example into the database */
     await example.insert(db);
