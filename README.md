@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v4.0.1
+# EZ Objects - MySQL Edition - v4.0.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -243,14 +243,14 @@ meaning it's intended to be linked to a MySQL table:
  * **Description:** Insert this object's property values into the database `db`, table `tableName`, and store the resulting insertId in the `id` property of this object.
 
 ### MyObject.load(mysqlRow[, db])
- * **Parameter:** mysqlRow `RowDataPacket` A MySQL `RowDataPacket` returned as part of a MySQL result set
+ * **Parameter:** mysqlRow `RowDataPacket` - A MySQL `RowDataPacket` returned as part of a MySQL result set
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any custom loadTransform handlers defined for configured properties.
 
 ### MyObject.load(obj[, db])
  * **Parameter:** obj PlainObject
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any custom loadTransform handlers defined for configured properties.
 
 
 ### MyObject.load(id, db)
@@ -266,7 +266,7 @@ meaning it's intended to be linked to a MySQL table:
 ### MyObject.load(url[, db])
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
  * **Parameter:** db - `MySQLConnection`
- * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform methods on configured properties.
+ * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any custom loadTransform handlers defined for configured properties.
  * **Note:** This signature is useful only when your classes are standalone browserify'd and requires you to implement a backend at `url` that will output the JSON.  This signature also requires you have jQuery loaded prior to use.
 
 ### MyObject.update(db)
@@ -312,7 +312,7 @@ See the following for how to configure your EZ Objects:
 * **instanceOf** - `string` - (optional) JavaScript class constructor name that the property must be an instance of \[either **type** or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
 * **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only plain objects and custom object types are nullable
-* **arrayOf** - `object` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, 
+* **arrayOf** - `object` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`.  Should also include any other relevant MySQL attributes for the stored properties, such as allowNull, length, unsigned, etc, though not all specifics will be used as the current practice is to store arrays using the family of MySQL `text`-type fields.  That may change in future versions though where they may be stored in transparent sub-tables, so it's best practice to include the MySQL specifics if you desire future compatability.  Important Note: Arrays also therefore don't yet have unlimited size capability, and if the MySQL type used by default isn't big enough, it will be up to you to manually override the `mysqlType` of the `array` property configuration. 
 `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`,
 `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `object`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  \[either **type** or **instanceOf** is required]
 * **setTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
