@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v4.1.1
+# EZ Objects - MySQL Edition - v4.1.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -306,11 +306,11 @@ See the following for how to configure your EZ Objects:
 ### A basic property configuration can have the following:
 
 * **name** - `string` - (required) Name of the property, must conform to both JavaScript and MySQL rules
-* **type** - `string` - (optional) EZ Object type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `object`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
+* **type** - `string` - (optional) EZ Object type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `plainobject`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
 * **instanceOf** - `string` - (optional) JavaScript class constructor name that the property must be an instance of \[either **type** or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
 * **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only plain objects and custom object types are nullable
-* **arrayOf** - `object` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `object`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  Should also include any other relevant MySQL attributes for the stored properties, such as allowNull, length, unsigned, etc, though not all specifics will be used as the current practice is to store arrays using the family of MySQL `text`-type fields.  That may change in future versions though where they may be stored in transparent sub-tables, so it's best practice to include the MySQL specifics if you desire future compatability.  **Important Note:** Arrays also therefore don't yet have unlimited size capability, and if the MySQL type used by default isn't big enough, it will be up to you to manually override the `mysqlType` of the `array` property configuration.  \[either **type** or **instanceOf** is required]
+* **arrayOf** - `object` - (required for type `array`) A plain object containing he EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `plainobject`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  Should also include any other relevant MySQL attributes for the stored properties, such as allowNull, length, unsigned, etc, though not all specifics will be used as the current practice is to store arrays using the family of MySQL `text`-type fields.  That may change in future versions though where they may be stored in transparent sub-tables, so it's best practice to include the MySQL specifics if you desire future compatability.  **Important Note:** Arrays also therefore don't yet have unlimited size capability, and if the MySQL type used by default isn't big enough, it will be up to you to manually override the `mysqlType` of the `array` property configuration.  \[either **type** or **instanceOf** is required]
 * **setTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will be passed the expected value `type`, if needed.
 
 ### A MySQL property configuration can also have the following:
@@ -372,7 +372,7 @@ See the following for how to configure your EZ Objects:
 * `set` - `new Set()`
 * `boolean` - `false`
 * `function` - `function () { }`
-* `object` - `{}`
+* `plainobject` - `{}`
 * All `array` types - `[]`
 * All other types - `null`
 
