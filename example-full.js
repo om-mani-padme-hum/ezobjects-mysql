@@ -58,7 +58,7 @@ const configExample = {
     { name: `booleanExample`, type: `boolean` },
     { name: `functionExample`, type: `function` },
     { name: `functionExample2`, type: `function`, store: true },
-    { name: `plainObjectExample`, type: `PlainObject` },
+    { name: `plainObjectExample`, type: `object` },
     { name: `ezobjectTypeExample`, type: `OtherObj` },
     { name: `ezobjectInstanceExample`, instanceOf: `OtherObj` },
     { name: `ezobjectInstanceExample2`, instanceOf: `OtherObj`, store: false },
@@ -99,10 +99,10 @@ const configExample = {
     { name: `booleanArrayExample`, type: `Array`, arrayOf: { type: `boolean` } },
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
     { name: `functionArrayExample2`, type: `Array`, arrayOf: { type: `function`, store: true } },
-    { name: `plainObjectArrayExample`, type: `Array`, arrayOf: { type: `PlainObject` } },
+    { name: `plainObjectArrayExample`, type: `Array`, arrayOf: { type: `object` } },
     { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` } },
     { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` } },
-    { name: `ezobjectInstanceArrayExample2`, type: `Array`, arrayOf: { instanceOf: `OtherObj` } },
+    { name: `ezobjectInstanceArrayExample2`, type: `Array`, arrayOf: { instanceOf: `OtherObj` }, store: false },
   ],
   indexes: [
     { name: `varcharExample`, type: `BTREE`, columns: [ `varcharExample` ] },
@@ -129,7 +129,7 @@ ezobjects.createClass(configOtherObj);
 /** Configure an extended object for use in the example */
 const configExtendedObj = {
   className: `ExtendedObj`,
-  tableName: `extendedObjects`,
+  tableName: `extended_objects`,
   extends: OtherObj,
   extendsConfig: configOtherObj,
 };
@@ -137,109 +137,24 @@ const configExtendedObj = {
 /** Create the ExtendedObj class */
 ezobjects.createClass(configExtendedObj); 
 
-const otherObj1 = new OtherObj({ name: `Type Example 1` });
-const otherObj2 = new OtherObj({ name: `Type Example 2` });
-const extendedObj1 = new ExtendedObj({ name: `Instance Example Stored 1` });
-const extendedObj2 = new ExtendedObj({ name: `Instance Example Stored 2` });
-const extendedObj3 = new ExtendedObj({ name: `Instance Example Not Stored 1` });
-const extendedObj4 = new ExtendedObj({ name: `Instance Example Not Stored 2` });
-                                     
-/** Create new example object, initializing with object passed to constructor */
-const example = new Example({
-  bitExample: Buffer.from([0b1, 0b0]),
-  tinyintExample: -128,
-  tinyintExample2: 255,
-  smallintExample: -32767,
-  mediumintExample: -8388608,
-  intExample: -2147483648,
-  integerExample: -2147483648,
-//  bigintExample: -9223372036854775808,
-  doubleExample: 193448295822329038402340234.23840923804823094809234245,
-  floatExample: 1927492498374.2348927395,
-  decimalExample: 23.452,
-  numericExample: 942.28734,
-  dateExample: new Date(`1986-06-20`),
-  timeExample: `-838:59:59`,
-  timestampExample: new Date(`2011-07-16T04:52:23-06:00`),
-  datetimeExample: new Date(`2011-07-16T04:52:23-06:00`),
-  yearExample: 2004,
-  charExample: `AU`,
-  charExample2: `ÄÜ`,
-  varcharExample: `Varchar Example`,
-  varcharExample2: null,
-  binaryExample: Buffer.from([0x04, 0x7F, 0x13, 0x38]),
-  varbinaryExample: Buffer.from([0x04, 0x7F]),
-  tinyblobExample: Buffer.from(`I am a tiny blob up to 256 bytes`),
-  blobExample: Buffer.from(`I am a bigger blob up to 65 kB`),
-  mediumblobExample: Buffer.from(`I am a bigger blob up to 16 MB`),
-  longblobExample: Buffer.from(`I am a bigger blob up to 4 GB`),
-  tinytextExample: `I am a tiny text up to 256 bytes`,
-  textExample: `I am a bigger text up to 65 kB`,
-  mediumtextExample: `I am a bigger text up to 16 MB`,
-  longtextExample: `I am a bigger text up to 4 GB`,
-  enumExample: `two`,
-  setExample: new Set(['a', 'd', 'd']),
-  booleanExample: true,
-  functionExample: (arg) => { return `I am ${arg}`; },
-  functionExample2: (arg) => { return `I am ${arg} stored`; },
-  plainObjectExample: { a: 'I am A', 14: 'Plain Object' },
-  ezobjectTypeExample: otherObj1,
-  ezobjectInstanceExample: extendedObj1,
-  ezobjectInstanceExample2: extendedObj3,
-
-  bitArrayExample: [Buffer.from([0b1, 0b0]), Buffer.from([0b0, 0b1])],
-  tinyintArrayExample: [-128, 128],
-  tinyintArrayExample2: [0, 255],
-  smallintArrayExample: [-32767, 32767],
-  mediumintArrayExample: [-8388608, 8388608],
-  intArrayExample: [-2147483648, 2147483648],
-  integerArrayExample: [-2147483648, 2147483648],
-  bigintArrayExample: [-9223372036854775808, 9223372036854775808],
-  doubleArrayExample: [-193448295822329038402340234.23840923804823094809234245, 193448295822329038402340234.23840923804823094809234245],
-  floatArrayExample: [-1927492498374.2348927395, 1927492498374.2348927395],
-  decimalArrayExample: [-23.452, 23.452],
-  numericArrayExample: [-942.28734, 942.28734],
-  dateArrayExample: [new Date(`06-20-1986`), new Date(`11-02-1909`)],
-  timeArrayExample: [`-838:59:59`, `838:59:59`],
-  timestampArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
-  datetimeArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
-  yearArrayExample: [2004, 1968],
-  charArrayExample: [`AU`, `CD`],
-  charArrayExample2: [`ÄÜ`, `CD`],
-  varcharArrayExample: [`Varchar Example`, `Another Varchar Example`],
-  varcharArrayExample2: [null, `Varchar Example 2`],
-  binaryArrayExample: [Buffer.from([0x04, 0x7F, 0x13, 0x38]), Buffer.from([0xA3, 0x09])],
-  varbinaryArrayExample: [Buffer.from([0x04, 0x7F]), Buffer.from([0xA3, 0x09, 0xDC])],
-  tinyblobArrayExample: [Buffer.from(`I am a tiny blob up to 256 bytes`), Buffer.from(`I am another tiny blob up to 256 bytes`)],
-  blobArrayExample: [Buffer.from(`I am a bigger blob up to 65 kB`), Buffer.from(`I am another bigger blob up to 65 kB`)],
-  mediumblobArrayExample: [Buffer.from(`I am a bigger blob up to 16 MB`), Buffer.from(`I am another bigger blob up to 16 MB`)],
-  longblobArrayExample: [Buffer.from(`I am a bigger blob up to 4 GB`), Buffer.from(`I am another bigger blob up to 4 GB`)],
-  tinytextArrayExample: [`I am a tiny text up to 256 bytes`, `I am another tiny text up to 256 bytes`],
-  textArrayExample: [`I am a bigger text up to 65 kB`, `I am another bigger text up to 65 kB`],
-  mediumtextArrayExample: [`I am a bigger text up to 16 MB`, `I am another bigger text up to 16 MB`],
-  longtextArrayExample: [`I am a bigger text up to 4 GB`, `I am another bigger text up to 4 GB`],
-  enumArrayExample: [`two`, `one`],
-  setArrayExample: [new Set(['a', 'd']), new Set(['a', 'c', 'd', 'd'])],
-  booleanArrayExample: [false, true],
-  functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
-  functionArrayExample2: [(arg) => { return `I am ${arg} stored 1`; }, (arg) => { return `I am ${arg} stored 2`; }],
-  plainObjectArrayExample: [{ a: 'I am A', 14: 'Plain Object' }, { and: 'So am I too a', 930: 'Plain Object' }],
-  ezobjectTypeArrayExample: [otherObj1, otherObj2],
-  ezobjectInstanceArrayExample: [extendedObj1, extendedObj2],
-  ezobjectInstanceArrayExample2: [extendedObj3, extendedObj4]
-});
-
 /** Self-executing async wrapper so we can await results */
 (async () => {
   try {
     /** Create example table if it doesn`t already exist */
     await ezobjects.createTable(configExample, db);
-    
+
     /** Create other object table if it doesn`t already exist */
     await ezobjects.createTable(configOtherObj, db);
-    
+
     /** Create extended object table if it doesn`t already exist */
     await ezobjects.createTable(configExtendedObj, db);
+
+    const otherObj1 = new OtherObj({ name: `Type Example 1` });
+    const otherObj2 = new OtherObj({ name: `Type Example 2` });
+    const extendedObj1 = new ExtendedObj({ name: `Instance Example Stored 1` });
+    const extendedObj2 = new ExtendedObj({ name: `Instance Example Stored 2` });
+    const extendedObj3 = new ExtendedObj({ name: `Instance Example Not Stored 1` });
+    const extendedObj4 = new ExtendedObj({ name: `Instance Example Not Stored 2` });
 
     /** 
      * Insert other objects and extended objects into the database.
@@ -248,11 +163,95 @@ const example = new Example({
      * the other objects and extended objects have ID's to store!
      **/
     await otherObj1.insert(db);
+    await otherObj2.insert(db);
     await extendedObj1.insert(db);
     await extendedObj2.insert(db);
-    await extendedObj3.insert(db);
-    await extendedObj4.insert(db);
-    
+
+    /** Create new example object, initializing with object passed to constructor */
+    const example = new Example({
+      bitExample: Buffer.from([0b1, 0b0]),
+      tinyintExample: -128,
+      tinyintExample2: 255,
+      smallintExample: -32767,
+      mediumintExample: -8388608,
+      intExample: -2147483648,
+      integerExample: -2147483648,
+    //  bigintExample: -9223372036854775808,
+      doubleExample: 193448295822329038402340234.23840923804823094809234245,
+      floatExample: 1927492498374.2348927395,
+      decimalExample: 23.452,
+      numericExample: 942.28734,
+      dateExample: new Date(`1986-06-20`),
+      timeExample: `-838:59:59`,
+      timestampExample: new Date(`2011-07-16T04:52:23-06:00`),
+      datetimeExample: new Date(`2011-07-16T04:52:23-06:00`),
+      yearExample: 2004,
+      charExample: `AU`,
+      charExample2: `ÄÜ`,
+      varcharExample: `Varchar Example`,
+      varcharExample2: null,
+      binaryExample: Buffer.from([0x04, 0x7F, 0x13, 0x38]),
+      varbinaryExample: Buffer.from([0x04, 0x7F]),
+      tinyblobExample: Buffer.from(`I am a tiny blob up to 256 bytes`),
+      blobExample: Buffer.from(`I am a bigger blob up to 65 kB`),
+      mediumblobExample: Buffer.from(`I am a bigger blob up to 16 MB`),
+      longblobExample: Buffer.from(`I am a bigger blob up to 4 GB`),
+      tinytextExample: `I am a tiny text up to 256 bytes`,
+      textExample: `I am a bigger text up to 65 kB`,
+      mediumtextExample: `I am a bigger text up to 16 MB`,
+      longtextExample: `I am a bigger text up to 4 GB`,
+      enumExample: `two`,
+      setExample: new Set(['a', 'd', 'd']),
+      booleanExample: true,
+      functionExample: (arg) => { return `I am ${arg}`; },
+      functionExample2: (arg) => { return `I am ${arg} stored`; },
+      plainObjectExample: { a: 'I am A', 14: 'Plain Object' },
+      ezobjectTypeExample: otherObj1,
+      ezobjectInstanceExample: extendedObj1,
+      ezobjectInstanceExample2: extendedObj3,
+
+      bitArrayExample: [Buffer.from([0b1, 0b0]), Buffer.from([0b0, 0b1])],
+      tinyintArrayExample: [-128, 128],
+      tinyintArrayExample2: [0, 255],
+      smallintArrayExample: [-32767, 32767],
+      mediumintArrayExample: [-8388608, 8388608],
+      intArrayExample: [-2147483648, 2147483648],
+      integerArrayExample: [-2147483648, 2147483648],
+      bigintArrayExample: [-9223372036854775808, 9223372036854775808],
+      doubleArrayExample: [-193448295822329038402340234.23840923804823094809234245, 193448295822329038402340234.23840923804823094809234245],
+      floatArrayExample: [-1927492498374.2348927395, 1927492498374.2348927395],
+      decimalArrayExample: [-23.452, 23.452],
+      numericArrayExample: [-942.28734, 942.28734],
+      dateArrayExample: [new Date(`06-20-1986`), new Date(`11-02-1909`)],
+      timeArrayExample: [`-838:59:59`, `838:59:59`],
+      timestampArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
+      datetimeArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
+      yearArrayExample: [2004, 1968],
+      charArrayExample: [`AU`, `CD`],
+      charArrayExample2: [`ÄÜ`, `CD`],
+      varcharArrayExample: [`Varchar Example`, `Another Varchar Example`],
+      varcharArrayExample2: [null, `Varchar Example 2`],
+      binaryArrayExample: [Buffer.from([0x04, 0x7F, 0x13, 0x38]), Buffer.from([0xA3, 0x09])],
+      varbinaryArrayExample: [Buffer.from([0x04, 0x7F]), Buffer.from([0xA3, 0x09, 0xDC])],
+      tinyblobArrayExample: [Buffer.from(`I am a tiny blob up to 256 bytes`), Buffer.from(`I am another tiny blob up to 256 bytes`)],
+      blobArrayExample: [Buffer.from(`I am a bigger blob up to 65 kB`), Buffer.from(`I am another bigger blob up to 65 kB`)],
+      mediumblobArrayExample: [Buffer.from(`I am a bigger blob up to 16 MB`), Buffer.from(`I am another bigger blob up to 16 MB`)],
+      longblobArrayExample: [Buffer.from(`I am a bigger blob up to 4 GB`), Buffer.from(`I am another bigger blob up to 4 GB`)],
+      tinytextArrayExample: [`I am a tiny text up to 256 bytes`, `I am another tiny text up to 256 bytes`],
+      textArrayExample: [`I am a bigger text up to 65 kB`, `I am another bigger text up to 65 kB`],
+      mediumtextArrayExample: [`I am a bigger text up to 16 MB`, `I am another bigger text up to 16 MB`],
+      longtextArrayExample: [`I am a bigger text up to 4 GB`, `I am another bigger text up to 4 GB`],
+      enumArrayExample: [`two`, `one`],
+      setArrayExample: [new Set(['a', 'd']), new Set(['a', 'c', 'd', 'd'])],
+      booleanArrayExample: [false, true],
+      functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
+      functionArrayExample2: [(arg) => { return `I am ${arg} stored 1`; }, (arg) => { return `I am ${arg} stored 2`; }],
+      plainObjectArrayExample: [{ a: 'I am A', 14: 'Plain Object' }, { and: 'So am I too a', 930: 'Plain Object' }],
+      ezobjectTypeArrayExample: [otherObj1, otherObj2],
+      ezobjectInstanceArrayExample: [extendedObj1, extendedObj2],
+      ezobjectInstanceArrayExample2: [extendedObj3, extendedObj4]
+    });
+
     /** Log the initialized example object */
     console.log(`Initialized example object:`);
     console.log(`${util.inspect(example, { depth: null })}\n`);
