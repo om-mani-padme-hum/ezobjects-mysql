@@ -32,8 +32,8 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 
 **Important Notes:** Each of your EZ Object tables must include an `int` or `integer` property named 
 `id` that will be automatically configured to serve as an auto-incrementing primary index in the MySQL 
-table that you are linking your object to.  The `load` method will generally be based off hte `id` field,
-unless you specify a `stringSearchField`.  Also note that ou must also use EZ Object's MySQLConnection class 
+table that you are linking your object to.  The `load` method will generally be based off the `id` field,
+unless you specify a `stringSearchField`.  Also note that you must also use EZ Object's MySQLConnection class 
 for your database connection for compatability purposes and to allow async/await functionality.
 
 ```javascript
@@ -70,7 +70,7 @@ const configDatabaseRecord = {
 };
 
 /** 
- * Create the DatabaseRecord object -- Note: This object is not linked
+ * Create the DatabaseRecord class -- Note: This object is not linked
  * to a MySQL table directly, as it has no `tableName` property, but
  * it can be extended by EZ Objects that are linked to tables.
  */
@@ -99,7 +99,7 @@ const configUserAccount = {
   ]
 };
 
-/** Create the UserAccount object */
+/** Create the UserAccount class */
 ezobjects.createClass(configUserAccount);
 
 /** 

@@ -32,7 +32,7 @@ const configDatabaseRecord = {
 };
 
 /** 
- * Create the DatabaseRecord object -- Note: This object is not linked
+ * Create the DatabaseRecord class -- Note: This object is not linked
  * to a MySQL table directly, as it has no `tableName` property, but
  * it can be extended by EZ Objects that are linked to tables.
  */
@@ -61,7 +61,7 @@ const configUserAccount = {
   ]
 };
 
-/** Create the UserAccount object */
+/** Create the UserAccount class */
 ezobjects.createClass(configUserAccount);
 
 /** 
