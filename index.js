@@ -655,10 +655,9 @@ module.exports.createClass = (obj) => {
       });
 
       /** Loop through each property in the obj */
-      obj.properties.forEach((property) => {
-        /** Initialize types to defaults */
-        this[property.name](data[property.name] || property.default || property.ezobjectType.default);
-      });
+      for( let i = 0, i_max = obj.properties.length; i < i_max; i++ ) {
+        this[obj.properties[i].name](data[obj.properties[i].name] || obj.properties[i].default || obj.properties[i].ezobjectType.default);
+      }
     }
   };
   
@@ -811,50 +810,9 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL load method on prototype */
-    parent[obj.className].prototype.load = async function (arg1, db) {        
-      /** Provide option for loading record from browser if developer implements ajax backend */
-      if ( typeof window !== `undefined` && typeof arg1 == `string` && arg1.match(/^http\:\/\//i) ) {
-        /** Attempt to parse the URL */
-        const url = new URL(arg1);
-
-        /** Attempt to retrieve a JSON response from the parsed URL */
-        const result = await $.get({
-          url: url.href,
-          dataType: `json`
-        });
-
-        /** If result is invalid, throw error */
-        if ( !result )
-          throw new Error(`${obj.className}.load(): Unable to load record, invalid response from remote host.`);
-
-        /** Create helper method for recursively loading property values into object */
-        const loadProperties = async (obj) => {
-          /** If this object extends another, recursively add extended property values into objecct */
-          if ( obj.extendsConfig )
-            await loadProperties(obj.extendsConfig);
-
-          /** Loop through each property */
-          for ( let i = 0, i_max = obj.properties.length; i < i_max; i++ ) {
-            /** Don't attempt to load properties that are not stored in the database */
-            if ( !obj.properties[i].store )
-              continue;
-            
-            /** Append property in object */
-            if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof db == 'object' && db.constructor.name == 'MySQLConnection' )
-                this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i], db));
-              else
-                this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i]));
-            }
-          }
-        };
-
-        /** Store loaded record properties into object */
-        await loadProperties(obj);
-      }
-
+    parent[obj.className].prototype.load = async function (arg1, db) {
       /** If the first argument is a valid database and the second is a number, load record from database by ID */
-      else if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` && db.constructor.name == `MySQLConnection` ) {
+      if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` && db.constructor.name == `MySQLConnection` ) {
         if ( typeof arg1 == `string` && typeof obj.otherSearchField !== `string` )
           throw new Error(`${obj.className}.load(): String argument is not a URL so loading from database, but no 'otherSearchField' configured.`);
         
@@ -920,9 +878,34 @@ module.exports.createClass = (obj) => {
         /** Store loaded record properties into object */
         await loadProperties(obj);
       } 
+      
+      /** Provide option for loading record from browser if developer implements ajax backend */
+      else if ( typeof window !== `undefined` && ( typeof arg1 == `string` || typeof arg1 == `number` ) && typeof obj.url == 'string' && obj.url.match(/^http\:\/\//i) ) {        
+        /** Attempt to parse the URL */
+        const url = new URL(obj.url + arg1);
 
-      /** If the first argument is a MySQL RowDataPacket, load from row data */
-      else if ( typeof arg1 == `object` && ( arg1.constructor.name == `RowDataPacket` || arg1.constructor.name == `Object` ) ) {        
+        /** Attempt to retrieve a JSON response from the parsed URL */
+        const result = await $.get({
+          url: url,
+          dataType: `json`
+        });
+        
+        /** If result is invalid, throw error */
+        if ( !result )
+          throw new Error(`${obj.className}.load(): Unable to load record, invalid response from remote host.`);
+
+        /** Loop through each key/val pair in data */
+        Object.keys(result).forEach((key) => {
+          /** If key begins with '_' */
+          if ( key.match(/^_/) ) {
+            /** Create a new key with the '_' character stripped from the beginning */
+            Object.defineProperty(result, key.replace(/^_/, ``), Object.getOwnPropertyDescriptor(result, key));
+
+            /** Delete the old key that has '_' */
+            delete result[key];
+          }
+        });
+        
         /** Create helper method for recursively loading property values into object */
         const loadProperties = async (obj) => {
           /** If this object extends another, recursively add extended property values into objecct */
@@ -936,7 +919,54 @@ module.exports.createClass = (obj) => {
               continue;
             
             /** Append property in object */
-            if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {              
+            if ( typeof result[obj.properties[i].name] !== `undefined` ) {              
+              if ( typeof result[obj.properties[i].name] == 'object' && result[obj.properties[i].name].constructor.name == 'Array' && obj.properties[i].ezobjectType.arrayOfType == `other` && typeof result[obj.properties[i].name][0] == 'object' && result[obj.properties[i].name][0].constructor.name == 'Object' && typeof result[obj.properties[i].name][0]._id === 'number' )
+                result[obj.properties[i].name] = result[obj.properties[i].name].map(x => x._id).join(`,`);
+              else if ( typeof arg1[obj.properties[i].name] == 'object' && result[obj.properties[i].name].constructor.name == 'Object' && typeof result[obj.properties[i].name]._id == 'number' && obj.properties[i].ezobjectType.type == `other` )
+                result[obj.properties[i].name] = parseInt(result[obj.properties[i].name]._id);
+              
+              this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i]));
+            }
+          }
+        };
+
+        /** Store loaded record properties into object */
+        await loadProperties(obj);
+      }
+
+      /** If the first argument is a MySQL RowDataPacket, load from row data */
+      else if ( typeof arg1 == `object` && ( arg1.constructor.name == `RowDataPacket` || arg1.constructor.name == `Object` ) ) {
+        /** Loop through each key/val pair in data */
+        Object.keys(arg1).forEach((key) => {
+          /** If key begins with '_' */
+          if ( key.match(/^_/) ) {
+            /** Create a new key with the '_' character stripped from the beginning */
+            Object.defineProperty(arg1, key.replace(/^_/, ``), Object.getOwnPropertyDescriptor(arg1, key));
+
+            /** Delete the old key that has '_' */
+            delete arg1[key];
+          }
+        });
+      
+        /** Create helper method for recursively loading property values into object */
+        const loadProperties = async (obj) => {
+          /** If this object extends another, recursively add extended property values into objecct */
+          if ( obj.extendsConfig )
+            await loadProperties(obj.extendsConfig);
+
+          /** Loop through each property */
+          for ( let i = 0, i_max = obj.properties.length; i < i_max; i++ ) {
+            /** Don't attempt to load properties that are not stored in the database */
+            if ( !obj.properties[i].store )
+              continue;
+            
+            /** Append property in object */
+            if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
+              if ( typeof arg1[obj.properties[i].name] == 'object' && arg1[obj.properties[i].name].constructor.name == 'Array' && obj.properties[i].ezobjectType.arrayOfType == `other` && typeof arg1[obj.properties[i].name][0] == 'object' && arg1[obj.properties[i].name][0].constructor.name == 'Object' && typeof arg1[obj.properties[i].name][0]._id === 'number' )
+                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => x._id).join(`,`);
+              else if ( typeof arg1[obj.properties[i].name] == 'object' && arg1[obj.properties[i].name].constructor.name == 'Object' && typeof arg1[obj.properties[i].name]._id == 'number' && obj.properties[i].ezobjectType.type == `other` )
+                arg1[obj.properties[i].name] = parseInt(arg1[obj.properties[i].name]._id);
+              
               if ( typeof db == 'object' && db.constructor.name == 'MySQLConnection' )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
               else
