@@ -812,9 +812,7 @@ module.exports.createClass = (obj) => {
       if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` && db.constructor.name == `MySQLConnection` ) {
         if ( typeof arg1 == `string` && typeof obj.otherSearchField !== `string` )
           throw new Error(`${obj.className}.load(): String argument is not a URL so loading from database, but no 'otherSearchField' configured.`);
-        
-        console.log(`Loading from database`);
-        
+                
         /** Begin SELECT query */
         let query = `SELECT `;
 
@@ -849,8 +847,6 @@ module.exports.createClass = (obj) => {
           query += `WHERE ${obj.otherSearchField} = ?`;
         else
           query += `WHERE id = ?`;
-
-        console.log(query);
         
         /** Execute query to load record properties from the database */
         const result = await db.query(query, [arg1]);
@@ -870,8 +866,6 @@ module.exports.createClass = (obj) => {
             /** Don't attempt to load properties that are not stored in the database */
             if ( !obj.properties[i].store )
               continue;
-
-            console.log(`${obj.properties[i].name} - ${result[0][obj.properties[i].name]}`);
             
             /** Append property in object */
             this[obj.properties[i].name](await obj.properties[i].loadTransform(result[0][obj.properties[i].name], obj.properties[i], db));
@@ -887,8 +881,6 @@ module.exports.createClass = (obj) => {
         if ( typeof obj.url != `string` || !obj.url.match(/^http\:\/\//i) )
           throw new Error(`${obj.className}.load(): You can only load from a string or number without a database if a URL is configured.`);
         
-        console.log(`Loading from URL`);
-
         /** Attempt to parse the URL */
         const url = new URL(obj.url + arg1);
 
@@ -936,8 +928,6 @@ module.exports.createClass = (obj) => {
               else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == 'Object' && typeof result[obj.properties[i].name]._id == 'number' && obj.properties[i].ezobjectType.type == `other` )
                 result[obj.properties[i].name] = parseInt(result[obj.properties[i].name]._id);
               
-              console.log(`${obj.properties[i].name} - ${result[obj.properties[i].name]}`);
-
               if ( typeof db == 'object' && db.constructor.name == 'MySQLConnection' )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i], db));
               else
