@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v6.0.1
+# EZ Objects - MySQL Edition - v6.0.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -97,7 +97,7 @@ const configUserAccount = {
     { name: `firstName`, type: `varchar`, length: 20 },
     { name: `lastName`, type: `varchar`, length: 20 },
     { name: `checkingBalance`, type: `decimal`, length: 17, decimals: 2 },
-    { name: `permissions`, type: `Array`, arrayOf: { type: 'int' } },
+    { name: `permissions`, type: `Array`, arrayOf: { type: `int` } },
     { name: `favoriteDay`, type: `date` }
   ],
   indexes: [
@@ -183,25 +183,25 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
 true
 UserAccount {
   _id: 1,
-  _username: 'richlowe',
-  _firstName: 'Rich',
-  _lastName: 'Lowe',
+  _username: `richlowe`,
+  _firstName: `Rich`,
+  _lastName: `Lowe`,
   _checkingBalance: 4.32,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2018-01-01T06:00:00.000Z }
 UserAccount {
   _id: 1,
-  _username: 'richlowe',
-  _firstName: 'Richard',
-  _lastName: 'Lowe',
+  _username: `richlowe`,
+  _firstName: `Richard`,
+  _lastName: `Lowe`,
   _checkingBalance: 50.27,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2019-09-01T05:00:00.000Z }
 UserAccount {
   _id: 1,
-  _username: 'richlowe',
-  _firstName: 'Richard',
-  _lastName: 'Lowe',
+  _username: `richlowe`,
+  _firstName: `Richard`,
+  _lastName: `Lowe`,
   _checkingBalance: 50.27,
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2019-09-01T05:00:00.000Z }
@@ -308,6 +308,7 @@ See the following for how to configure your EZ Objects:
 
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
 * **otherSearchField** - `string` - (optional) The name of a unique property of type `string` that you want to be able to load with as an alternative to `id`
+* **url** - `string` - (optional) The URL of a back-end that will provide a JSON.stringify output of the EZ Object for browserify'd use.  For now, the URL must take the ID # of the record at the very end, i.e. http://go.to/myObject/load/(id #)
 
 ### A basic property configuration can have the following:
 
@@ -343,7 +344,7 @@ See the following for how to configure your EZ Objects:
 * **visible** - `boolean` - (optional) Indicates the index should be visible
 * **invisible** - `boolean` - (optional) Indicates the index should be invisible
 
-### Default intiailizations for different JavaScript types
+### Default initializations for different JavaScript types
 
 * `bit` - `Buffer.from([])`
 * `tinyint` - `0`
@@ -381,6 +382,15 @@ See the following for how to configure your EZ Objects:
 * `object` - `{}`
 * All `array` types - `[]`
 * All other types - `null`
+
+### Default transforms
+
+* Todo
+* Most arrays are stored as `text`, `mediumtext`, etc
+* `other` - **saveTransform(value, property)** - The ID # of the object.
+* `other` - **loadTransform(value, property, db)** - Create appropriate class for property and load from database `db` using `value`, which can either be an ID # or `stringSearchField` value.
+* `Array[other]` - **saveTransform(value, property)** - Comma delimieted string of all object ID #'s.
+* `Array[other]` - **loadTransform(value, property, db)** - Split `value` into an array of ID #'s and map them to the appropriate class for the property `arrayOf` type or instanceOf and load each from database `db`.
 
 ## Contributing
 

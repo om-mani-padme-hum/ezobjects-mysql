@@ -1,9 +1,9 @@
-const ezobjects = require('./index');
+const ezobjects = require(`./index`);
 
 const configWorker = {
   className: `Worker`,
   tableName: `example_workers`,
-  url: 'http://localhost:4000/workers/load/',
+  url: `http://localhost:4000/workers/load/`,
   properties: [
     { name: `id`, type: `int` },
     { name: `name`, type: `varchar`, length: 32 }
@@ -17,7 +17,7 @@ const configManager = {
   tableName: `example_managers`,
   extends: Worker,
   extendsConfig: configWorker,
-  url: 'http://localhost:4000/managers/load/',
+  url: `http://localhost:4000/managers/load/`,
   properties: [
     { name: `workers`, type: `array`, arrayOf: { instanceOf: `Worker` } }
   ]

@@ -1,14 +1,14 @@
-const ezobjects = require('./index');
-const fs = require('fs');
-const express = require('express');
-const models = require('./example-nested-models');
+const ezobjects = require(`./index`);
+const fs = require(`fs`);
+const express = require(`express`);
+const models = require(`./example-nested-models`);
 
 const app = express();
 
-const db = new ezobjects.MySQLConnection(JSON.parse(fs.readFileSync('mysql-config.json')));
+const db = new ezobjects.MySQLConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
 
-app.get('/workers/load/:id', async (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+app.get(`/workers/load/:id`, async (req, res, next) => {
+  res.setHeader(`Access-Control-Allow-Origin`, `*`);
 
   try {
     const worker = await (new models.Worker()).load(req.params.id.match(/^[0-9]+$/) ? parseInt(req.params.id) : req.params.id, db);
@@ -19,8 +19,8 @@ app.get('/workers/load/:id', async (req, res, next) => {
   }
 });
 
-app.get('/managers/load/:id', async (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+app.get(`/managers/load/:id`, async (req, res, next) => {
+  res.setHeader(`Access-Control-Allow-Origin`, `*`);
   
   try {
     const manager = await (new models.Manager()).load(req.params.id.match(/^[0-9]+$/) ? parseInt(req.params.id) : req.params.id, db);
@@ -39,15 +39,15 @@ app.listen(4000);
   await ezobjects.createTable(models.configManager, db);
   
   const worker1 = new models.Worker({
-    name: 'Rich'
+    name: `Rich`
   });
   
   const worker2 = new models.Worker({
-    name: 'Dan',
+    name: `Dan`,
   });
   
   const manager = new models.Manager({
-    name: 'Bob',
+    name: `Bob`,
     workers: [worker1, worker2]
   });
   

@@ -53,7 +53,7 @@ const configUserAccount = {
     { name: `firstName`, type: `varchar`, length: 20 },
     { name: `lastName`, type: `varchar`, length: 20 },
     { name: `checkingBalance`, type: `decimal`, length: 17, decimals: 2 },
-    { name: `permissions`, type: `Array`, arrayOf: { type: 'int' } },
+    { name: `permissions`, type: `Array`, arrayOf: { type: `int` } },
     { name: `favoriteDay`, type: `date` }
   ],
   indexes: [
