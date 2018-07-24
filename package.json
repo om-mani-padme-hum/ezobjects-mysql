@@ -37,7 +37,8 @@
     "mysql": "^2.15.0"
   },
   "devDependencies": {
-    "docket-parser": "^0.6.7"
+    "docket-parser": "^0.6.7",
+    "express": "^4.16.3"
   },
   "bugs": {
     "url": "https://github.com/om-mani-padme-hum/ezobjects-mysql/issues"
