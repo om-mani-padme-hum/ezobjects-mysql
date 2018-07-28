@@ -81,7 +81,9 @@ const setTransform = (x, property) => {
   else if ( x && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
-  if ( property.ezobjectType.hasDecimals )
+  if ( property.type == `varchar` )
+    return x === null ? null : x.substr(0, property.length);
+  else if ( property.ezobjectType.hasDecimals )
     return x === null ? null : parseFloat(x);
   else if ( property.ezobjectType.jsType == `number` )
     return x === null ? null : parseInt(x);
@@ -121,7 +123,9 @@ const setArrayTransform = (x, property) => {
   else if ( property.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type ) || ( typeof property.arrayOf.instanceOf === `string` && !module.exports.instanceOf(y, property.arrayOf.instanceOf) ))) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
   
-  if ( property.arrayOf.ezobjectType.hasDecimals )
+  if ( property.arrayOf.type == `varchar` )
+    arr = x.map(y => y === null ? null : y.substr(0, property.arrayOf.length));
+  else if ( property.arrayOf.ezobjectType.hasDecimals )
     arr = x.map(y => y === null ? null : parseFloat(y));
   else if ( property.arrayOf.ezobjectType.jsType == `number` )
     arr = x.map(y => y === null ? null : parseInt(y));
@@ -958,10 +962,12 @@ module.exports.createClass = (obj) => {
             
             /** Append property in object */
             if ( typeof result[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` && typeof result[obj.properties[i].name][0] == `object` && result[obj.properties[i].name][0].constructor.name == `Object` && typeof result[obj.properties[i].name][0]._id === `number` )
-                result[obj.properties[i].name] = result[obj.properties[i].name].map(x => x._id).join(`,`);
-              else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Object` && typeof result[obj.properties[i].name]._id == `number` && obj.properties[i].ezobjectType.type == `other` )
+              if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
+                result[obj.properties[i].name] = result[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
+              else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
                 result[obj.properties[i].name] = parseInt(result[obj.properties[i].name]._id);
+              else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` )
+                result[obj.properties[i].name] = result[obj.properties[i].name].join(`,`);
               
               if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i], db));
@@ -994,10 +1000,12 @@ module.exports.createClass = (obj) => {
             
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` && typeof arg1[obj.properties[i].name][0] == `object` && arg1[obj.properties[i].name][0].constructor.name == `Object` && typeof arg1[obj.properties[i].name][0]._id === `number` )
-                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => x._id).join(`,`);
-              else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Object` && typeof arg1[obj.properties[i].name]._id == `number` && obj.properties[i].ezobjectType.type == `other` )
+              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
+                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
+              else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
                 arg1[obj.properties[i].name] = parseInt(arg1[obj.properties[i].name]._id);
+              else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` )
+                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
               
               if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
