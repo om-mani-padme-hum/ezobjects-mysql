@@ -29,8 +29,8 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
   else if ( x && property.ezobjectType.jsType == `number` && typeof x !== `number` )
     throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `string` && typeof x !== `string` )
-    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed to '${property.type}' setter.`);
+  else if ( x && property.ezobjectType.jsType == `string` && typeof x !== `string` && typeof x !== `number` )
+    throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value passed to '${property.type}' setter.`);
   else if ( x && property.ezobjectType.jsType == `boolean` && typeof x !== `boolean` )
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to '${property.type}' setter.`);
   else if ( x && property.ezobjectType.jsType == `function` && typeof x !== `function` )
@@ -47,13 +47,15 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
   if ( property.type == `varchar` )
-    return x === null ? null : x.substr(0, property.length);
+    return x === null ? null : x.toString().substr(0, property.length);
   else if ( property.ezobjectType.hasDecimals )
     return x === null ? null : parseFloat(x);
   else if ( property.ezobjectType.jsType == `number` )
     return x === null ? null : parseInt(x);
   else if ( property.ezobjectType.jsType == `boolean` )
     return x === null ? null : (x ? true : false);
+  else if ( property.ezobjectType.jsType == 'string' )
+    return x === null ? null : x.toString();
   else
     return x === null ? null : x;
 };
