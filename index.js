@@ -218,19 +218,19 @@ function validatePropertyConfig(property) {
 
   /** If name is not a valid MySQL column name, throw error */
   if ( !property.name.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/) )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property 'name' not valid MySQL column name, must start with 'a-zA-Z_' and contain only 'a-zA-Z0-9_'.`);
+    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' not valid MySQL column name, must start with 'a-zA-Z_' and contain only 'a-zA-Z0-9_'.`);
     
   /** If type is missing or not a string, throw error */
   if ( typeof property.type !== `string` && typeof property.instanceOf !== `string` )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property ${property.name} configured with missing or invalid 'type' and/or 'instanceOf', one of them is required.`);
+    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' configured with missing or invalid 'type' and/or 'instanceOf', one of them is required.`);
   
   /** If type is invalid, throw error */
   if ( property.type && typeof property.type !== `string` )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property ${property.name} configured with invalid 'type'.`);
+    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' configured with invalid 'type'.`);
   
   /** If instanceOf is invalid, throw error */
   if ( property.instanceOf && typeof property.instanceOf !== `string` )
-    throw new Error(`ezobjects.validatePropertyConfig(): Property ${property.name} configured with invalid 'instanceOf'.`);
+    throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' configured with invalid 'instanceOf'.`);
 
   /** If the original type has not yet been recorded */
   if ( property.type && typeof property.originalType !== `string` ) {
