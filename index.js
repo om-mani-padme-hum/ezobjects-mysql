@@ -27,23 +27,23 @@ else
 const setTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x && property.ezobjectType.jsType == `number` && typeof x !== `number` )
+  else if ( x !== null && property.ezobjectType.jsType == `number` && typeof x !== `number` )
     throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `string` && typeof x !== `string` && typeof x !== `number` )
+  else if ( x !== null && property.ezobjectType.jsType == `string` && typeof x !== `string` && typeof x !== `number` )
     throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `boolean` && typeof x !== `boolean` )
+  else if ( x !== null && property.ezobjectType.jsType == `boolean` && typeof x !== `boolean` )
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `function` && typeof x !== `function` )
+  else if ( x !== null && property.ezobjectType.jsType == `function` && typeof x !== `function` )
     throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.type == `Date` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.type == `Date` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.type == `Buffer` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.type == `Buffer` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `Set` && ( typeof x !== `object` || x.constructor.type == `Set` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Set` && ( typeof x !== `object` || x.constructor.type == `Set` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.type == `Object` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.type == `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed to '${property.type}' setter.`);
-  else if ( x && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) ) ) )
+  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
   if ( property.type == `varchar` )
