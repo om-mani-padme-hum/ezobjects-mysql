@@ -677,6 +677,7 @@ module.exports.createClass = (obj) => {
     };
   });
   
+  /** If object has valid tableName property, it's meant to be connected to a MySQL database, so add MySQL class methods */
   if ( typeof obj.tableName == `string` && obj.tableName.match(/[a-z_]+/) ) {
     /** Create MySQL delete method on prototype */
     parent[obj.className].prototype.delete = async function (db) { 
