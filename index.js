@@ -27,7 +27,7 @@ else
 const setTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
-  else if ( x !== null && property.ezobjectType.jsType == `number` && typeof x !== `number` )
+  else if ( x !== null && property.ezobjectType.jsType == `number` && isNaN(x) )
     throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `string` && typeof x !== `string` && typeof x !== `number` )
     throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value passed to '${property.type}' setter.`);
@@ -73,7 +73,7 @@ const setArrayTransform = (x, property) => {
   
   if ( property.ezobjectType.jsType == `number` && x && x.some(y => isNaN(y) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.ezobjectType.jsType == `string` && x && x.some(y => typeof y !== `string` && y !== null) )
+  else if ( property.ezobjectType.jsType == `string` && x && x.some(y => typeof y !== `string` && y !== `number` && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-string value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.ezobjectType.jsType == `boolean` && x && x.some(y => typeof y !== `boolean` && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed as element of Array[${property.arrayOf.type}] setter.`);
@@ -98,6 +98,8 @@ const setArrayTransform = (x, property) => {
     arr = x.map(y => y === null ? null : parseInt(y));
   else if ( property.arrayOf.ezobjectType.jsType == `boolean` )
     arr = x.map(y => y === null ? null : (y ? true : false));
+  else if ( property.arrayOf.ezobjectType.jsType == `string` )
+    arr = x.map(y => y === null ? null : y.toString();
   else
     arr = x.map(y => y === null ? null : y);
 

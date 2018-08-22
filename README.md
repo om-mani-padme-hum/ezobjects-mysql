@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v6.1.2
+# EZ Objects - MySQL Edition - v6.1.3
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -306,7 +306,7 @@ See the following for how to configure your EZ Objects:
 ### A table-linked MySQL object configuration can also have the following:
 
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
-* **otherSearchField** - `string` - (optional) The name of a unique property of type `string` that you want to be able to load with as an alternative to `id`
+* **otherSearchField** - `string` - (optional) The name of a unique property that you want to be able to load with as an alternative to `id`
 * **url** - `string` - (optional) The URL of a back-end that will provide a JSON.stringify output of the EZ Object for browserify'd loading of the object using an AJAX background request.  For now, the URL must take the ID # of the record at the very end, i.e. http://go.to/myObject/load/{ID#}
 
 ### A basic property configuration can have the following:
