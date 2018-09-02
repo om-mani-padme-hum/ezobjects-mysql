@@ -54,7 +54,7 @@ const setTransform = (x, property) => {
     return x === null ? null : parseInt(x);
   else if ( property.ezobjectType.jsType == `boolean` )
     return x === null ? null : (x ? true : false);
-  else if ( property.ezobjectType.jsType == 'string' )
+  else if ( property.ezobjectType.jsType == `string` )
     return x === null ? null : x.toString();
   else
     return x === null ? null : x;
@@ -99,7 +99,7 @@ const setArrayTransform = (x, property) => {
   else if ( property.arrayOf.ezobjectType.jsType == `boolean` )
     arr = x.map(y => y === null ? null : (y ? true : false));
   else if ( property.arrayOf.ezobjectType.jsType == `string` )
-    arr = x.map(y => y === null ? null : y.toString();
+    arr = x.map(y => y === null ? null : y.toString());
   else
     arr = x.map(y => y === null ? null : y);
 

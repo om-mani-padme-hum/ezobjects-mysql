@@ -1,6 +1,6 @@
 const docket = require(`docket-parser`);
 
-docket.title(`EZ Objects v6.1.4`);
+docket.title(`EZ Objects v6.1.5`);
 docket.linkClass(`text-success`);
 docket.parseFiles([`index.js`, `mysql-connection.js`]);
 docket.generateDocs(`docs`);

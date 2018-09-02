@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v6.1.4
+# EZ Objects - MySQL Edition - v6.1.5
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
