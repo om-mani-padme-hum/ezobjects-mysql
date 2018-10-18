@@ -171,7 +171,7 @@ const ezobjectTypes = [
   { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
   { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
   { type: `enum`, jsType: `string`, mysqlType: `enum`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
-  { type: `set`, jsType: `Set`, mysqlType: `set`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform, saveTransform: x => Array.from(x.values()).join(`,`), loadTransform: x => new Set(x.split(`,`)) },
+  { type: `set`, jsType: `Set`, mysqlType: `set`, default: new Set(), hasCharacterSetAndCollate: true, setTransform: setTransform, saveTransform: x => Array.from(x.values()).join(`,`), loadTransform: x => new Set(x.split(`,`)) },
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
@@ -351,12 +351,12 @@ function validatePropertyConfig(property) {
   if ( property.ezobjectType.lengthRequiresDecimals && !isNaN(property.length) && isNaN(property.decimals) )
     throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} used with length, but without decimals.`);
 
-  /** If type is ENUM or SET and values missing or invalid, throw error */
-  if ( ( property.ezobjectType.mysqlType == `enum` || property.ezobjectType.mysqlType == `set` ) && ( typeof property.values !== `object` || property.values.constructor.name != `Array` ) )
+  /** If type is ENUM and values missing or invalid, throw error */
+  if ( property.ezobjectType.mysqlType == `enum` && ( typeof property.values !== `object` || property.values.constructor.name != `Array` ) )
     throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} used with missing or invalid values array.`);
   
-  /** If type is ENUM or SET and values exists but is empty, throw error */
-  if ( ( property.ezobjectType.mysqlType == `enum` || property.ezobjectType.mysqlType == `set` ) && property.values.length == 0 )
+  /** If type is ENUM and values exists but is empty, throw error */
+  if ( property.ezobjectType.mysqlType == `enum` && property.values.length == 0 )
     throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} used with empty values array, there must be at least one value.`);
   
   /** Create default transform function that doesn't change the input */
@@ -852,7 +852,7 @@ module.exports.createClass = (obj) => {
         /** Execute query to load record properties from the database */
         const result = await db.query(query, [arg1]);
 
-        /** If a record with that ID doesn`t exist, throw error */
+        /** If a record with that ID doesn`t exist, return null */
         if ( !result[0] )
           return null;
                 
