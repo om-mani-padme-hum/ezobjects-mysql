@@ -35,13 +35,13 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `function` && typeof x !== `function` )
     throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.type == `Date` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.name != `Date` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.type == `Buffer` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.name != `Buffer` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `Set` && ( typeof x !== `object` || x.constructor.type == `Set` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Set` && ( typeof x !== `object` || x.constructor.name != `Set` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.type == `Object` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
@@ -633,12 +633,13 @@ module.exports.createClass = (obj) => {
   /** Create new class on global scope */
   parent[obj.className] = class extends (obj.extends || Object) {
     /** Create constructor */
-    constructor(data = {}) {
+    constructor(data = {}, first = true) {
       /** Initialize super */
-      super(data);
+      super(data, false);
       
       /** Initialize object to values in `data` or defaults */
-      this.init(data);
+      if ( first )
+        this.init(data);
     }
     
     /** Create initializer */
