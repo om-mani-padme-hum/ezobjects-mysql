@@ -651,7 +651,10 @@ module.exports.createClass = (obj) => {
       /** Loop through each property in the obj */
       obj.properties.forEach((property) => {
         /** Initialize types to defaults */
-        this[property.name](data[property.name] || property.default || property.ezobjectType.default);
+        if ( typeof data[property.name] == `undefined` )
+          this[property.name](property.default || property.ezobjectType.default);
+        else
+          this[property.name](data[property.name]);
       });
     }
   };
