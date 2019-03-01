@@ -392,7 +392,7 @@ function validateClassConfig(obj) {
     throw new Error(`ezobjects.validateClassConfig(): Invalid table configuration argument, must be plain object.`);
     
   /** If configuration has missing or invalid 'className' configuration, throw error */
-  if ( typeof obj.className !== `string` || !obj.className.match(/[A-Za-z_0-9$]+/) )
+  if ( typeof obj.className !== `string` || !obj.className.match(/^[A-Za-z_0-9$]+$/) )
     throw new Error(`ezobjects.validateClassConfig(): Configuration has missing or invalid 'className', must be string containing characters 'A-Za-z_0-9$'.`);
 
   /** Add properties array if one wasn't set */
@@ -414,7 +414,7 @@ function validateClassConfig(obj) {
 /** Validate configuration for a creating MySQL table based on class configuration */
 function validateTableConfig(obj) {  
   /** If configuration has missing or invalid 'tableName' configuration, throw error */
-  if ( typeof obj.tableName !== `string` || !obj.tableName.match(/[a-z_]+/) )
+  if ( typeof obj.tableName !== `string` || !obj.tableName.match(/^[a-z_]+$/) )
     throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z_'.`);
 
   validateClassConfig(obj);
@@ -676,7 +676,7 @@ module.exports.createClass = (obj) => {
   });
   
   /** If object has valid tableName property, it's meant to be connected to a MySQL database, so add MySQL class methods */
-  if ( typeof obj.tableName == `string` && obj.tableName.match(/[a-z_]+/) ) {
+  if ( typeof obj.tableName == `string` && obj.tableName.match(/^[a-z_]+$/) ) {
     /** Create MySQL delete method on prototype */
     parent[obj.className].prototype.delete = async function (db) { 
       /** If the argument is a valid database, delete the record */
