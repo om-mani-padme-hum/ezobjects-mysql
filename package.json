@@ -37,7 +37,7 @@
     "mysql": "^2.16.0"
   },
   "devDependencies": {
-    "docket-parser": "^0.7.1",
+    "docket-parser": "^0.7.2",
     "express": "^4.16.4"
   },
   "bugs": {
