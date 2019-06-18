@@ -966,7 +966,7 @@ module.exports.createClass = (obj) => {
                         
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor ) {
+              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name] !== null ) {
                 if ( arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
                   arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
                 else if ( arg1[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
