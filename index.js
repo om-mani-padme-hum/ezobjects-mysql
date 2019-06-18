@@ -966,12 +966,14 @@ module.exports.createClass = (obj) => {
                         
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
-              else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                arg1[obj.properties[i].name] = parseInt(arg1[obj.properties[i].name]._id);
-              else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` )
-                arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
+              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor ) {
+                if ( arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
+                  arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
+                else if ( arg1[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
+                  arg1[obj.properties[i].name] = parseInt(arg1[obj.properties[i].name]._id);
+                else if ( arg1[obj.properties[i].name].constructor.name == `Array` )
+                  arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
+              }
               
               if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
