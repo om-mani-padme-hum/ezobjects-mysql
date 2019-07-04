@@ -233,7 +233,7 @@ function validatePropertyConfig(property) {
     /** Store original type with preserved case */
     property.originalType = property.type;
     
-    /** Convert type to lower-case for comparison to ezobjectsTypes */
+    /** Convert type to lower-case for comparison to EZ object types */
     property.type = property.type.toLowerCase();
   }
   
@@ -247,6 +247,9 @@ function validatePropertyConfig(property) {
     if ( typeof property.arrayOf.type != `string` && typeof property.arrayOf.instanceOf != `string` )
       throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
 
+    /** Convert array of type to lower-case for comparison to EZ object types */
+    property.arrayOf.type = property.arrayOf.type.toLowerCase();
+    
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
     property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
 
