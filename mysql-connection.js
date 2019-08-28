@@ -27,12 +27,9 @@ class MySQLConnection {
    * @description Abort the current SQL transaction, returning a [Promise] that resolves when finished.
    */
   abort() {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       /** Execute query and return result */
       this.conn().rollback(() => {
-        /** Verify connection properly closed */
-        this.close();
-
         /** Set the in transaction boolean to false so we can continue with normal queries */
         this.inTransaction(false);
 
@@ -56,12 +53,6 @@ class MySQLConnection {
       this.conn().beginTransaction((err) => {
         /** Handle errors */
         if ( err ) {
-          /** Log error messages */
-          console.log(err.message);
-
-          /** Verify connection properly closed */
-          this.close();
-
           reject(err);
         } else {
           /** Set the in transaction boolean to true so we can rollback on error */
@@ -80,18 +71,12 @@ class MySQLConnection {
    * on error.  Rejected commits have their transactions automatically rolled back.
    */
   commit() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       /** Execute query and return result */
       this.conn().commit((err) => {
         /** Handle errors */
         if ( err ) {
-          /** Log error messages */
-          console.log(err.message);
-
           this.conn().rollback(() => {
-            /** Verify connection properly closed */
-            this.close();
-
             /** Set the in transaction boolean to false so we can continue with normal queries */
             this.inTransaction(false);
             
@@ -165,7 +150,7 @@ class MySQLConnection {
    * @returns Promise
    * @description Connects to the MySQL database, returning a [Promise] that resolves when finished or rejects on error.
    */
-  async connect() {
+  connect() {
     return new Promise((resolve, reject) => {
       /** Verify configuration exists */
       if ( !this.config() )
@@ -182,17 +167,10 @@ class MySQLConnection {
       /** Attempt to connect to the database */
       this.conn().connect((err) => {
         /** Handle errors */
-        if ( err ) {
-          /** Log error messages */
-          console.log(err.message);
-
-          /** Verify connection properly closed */
-          this.close();
-
+        if ( err )
           reject(err);
-        }
-
-        resolve();
+        else
+          resolve();
       });
     });
   }
@@ -233,13 +211,19 @@ class MySQLConnection {
    * @description Queries the MySQL database, returning a [Promise] that resolves when finished or rejects on error.  If the database has not
    * yet established a connection, it is automatically done prior to query execution.
    */
-  async query(query, params) {
-    return new Promise(async (resolve) => {
+  query(query, params) {
+    return new Promise(async (resolve, reject) => {
       if ( !this.conn() )
         await this.connect();
       
       /** Execute query and return result */
-      resolve(await this.execute(query, params));
+      try {
+        const result = await this.execute(query, params);
+        
+        resolve(result);
+      } catch ( err ) {
+        reject(err);
+      }
     });
   }
   
@@ -251,29 +235,20 @@ class MySQLConnection {
    * @description Queries the MySQL database, returning a [Promise] that resolves when finished or rejects on error.  Rejected query executions
    * in the middle of transactions have their transactions automatically rolled back.
    */
-  async execute(query, params) {
+  execute(query, params) {
     return new Promise((resolve, reject) => {
       /** Query the MySQL connection */
       this.conn().query(query, params, (err, result) => {
         /** If error, print to console */
         if ( err ) {
-          /** Log error message */
-          console.log(err.message);
-
           if ( this.inTransaction() ) {
-            this.conn().rollback(() => {              
-              /** Verify connection properly closed */
-              this.close();
-
+            this.conn().rollback(() => {
               /** Set the in transaction boolean to false so we can continue with normal queries */
               this.inTransaction(false);
               
               reject(err);
             });
           } else {
-            /** Verify connection properly closed */
-            this.close();
-
             reject(err);
           }
         } else {
@@ -286,19 +261,22 @@ class MySQLConnection {
   
   /**
    * @signature close()
-   * @description Asynchronously closes the database connection, if connected.
+   * @returns Promise
+   * @description Asynchronously closes the database connection, returning a [Promise] that resolves whether
+   * the operation completed with an error or not.  That's because the only error usually is that the database
+   * is already closed and we don't want to have to add a try/catch block for that.
    */
   close() {
-    if ( this.conn() ) {
-      /** Attempt to close the connection */
-      this.conn().end((err) => {
-        /** If error, print to console */
-        if ( err )
-          console.log(err.message);
-
-        this.conn(null);
-      });
-    }
+    return new Promise((resolve) => {
+      if ( this.conn() ) {
+        /** Attempt to close the connection */
+        this.conn().end((err) => {
+          this.conn(null);
+          
+          resolve(err);
+        });
+      }
+    });
   }
 }
 
