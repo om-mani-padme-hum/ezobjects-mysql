@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v6.2.3
+# EZ Objects - MySQL Edition - v7.0.0
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -15,11 +15,9 @@ createClass() function.
 * [Contributing](#contributing)
 * [License](#license)
 
-### Version 6
+### Version 7
 
-Starting with version 6, the browserify'd usefulness of EZ Objects is fully functional, and can be explored
-in more detail in the `example-nested` files, where one can seamlessly load from server (using database), or
-client (using ajax w/ backend URL).
+Removed local MySQL class from EZ Objects and converted examples and API to use that of improved version now located at [mysql-await](https://github.com/om-mani-padme-hum/mysql-await).
 
 ### Want EZ Objects Without The MySQL?
 
@@ -39,12 +37,13 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 **Important Notes:** Each of your EZ Object tables must include an `int` or `integer` property named 
 `id` that will be automatically configured to serve as an auto-incrementing primary index in the MySQL 
 table that you are linking your object to.  The `load` method will generally be based off the `id` field,
-unless you specify a `stringSearchField`.  Also note that you must also use EZ Object's MySQLConnection class 
-for your database connection for compatability purposes and to allow async/await functionality.
+unless you specify a `stringSearchField`.  Also note that you must also use [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
+for your database connections for compatability purposes and to allow async/await functionality.
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
 const fs = require(`fs`);
+const mysql = require(`mysql-await`);
 
 /** 
  * Load external MySQL configuration which uses the following JSON 
@@ -62,7 +61,7 @@ const configMySQL = JSON.parse(fs.readFileSync(`mysql-config.json`));
  * Create a connection object for the MySQL database using our MySQL 
  * module async/await wrapper.
  */
-const db = new ezobjects.MySQLConnection(configMySQL);
+const db = mysql.createConnection(configMySQL);
 
 /** 
  * Configure a new EZ Object called DatabaseRecord with the required 
@@ -172,7 +171,7 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
     console.log(err.message);
   } finally {
     /** Close database connection */
-    db.close();
+    await  db.awaitEnd();
   }
 })();
 ```
@@ -241,41 +240,41 @@ These are the object method signatures that will additionally be provided if you
 meaning it's intended to be linked to a MySQL table:
 
 ### MyObject.delete(db)
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Delete the record in database `db`, table `tableName`, that has its `id` field equal to the `id` property of this object.
 
 ### MyObject.insert(db)
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Insert this object's property values into the database `db`, table `tableName`, and store the resulting insertId in the `id` property of this object.
 
 ### MyObject.load(mysqlRow[, db])
  * **Parameter:** mysqlRow `RowDataPacket` - A MySQL `RowDataPacket` returned as part of a MySQL result set
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
 
 ### MyObject.load(obj[, db])
  * **Parameter:** obj Object
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
 
 ### MyObject.load(id, db)
  * **Parameter:** id number The value of the `id` property of the record you wish to load
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Load the record in database `db`, table `tableName`, that has its `id` field equal to provided `id` parameter.
 
 ### MyObject.load(fieldValue, db)
  * **Parameter:** fieldValue - `mixed` - The value of the `otherSearchField` property of the record you wish to load
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchField` field equal to provided `fieldValue` parameter.  Here, the actual field name of `otherSearchField` is provided in the object configuration, see the configuration section below.
 
 ### MyObject.load(url[, db])
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
  * **Note:** This signature is useful only when your classes are standalone browserify'd and requires you to implement a backend at `url` that will output the JSON.  (This signature no longer requires jQuery to use)
 
 ### MyObject.update(db)
- * **Parameter:** db - `MySQLConnection`
+ * **Parameter:** db - `Object`
  * **Description:** Update the record in database `db`, table `tableName`, with its `id` field equal to the `id` property of this object, using this object's property values.
 
 ## Module Exports
@@ -287,9 +286,6 @@ A function that creates a MySQL table corresponding to the configuration outline
 
 ### ezobjects.createClass(objectConfig)
 A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
-
-### ezobjects.MySQLConnection(mysqlConfig)
-A MySQL database connection class that wraps the [standard mysql object](https://www.npmjs.com/package/mysql) and provides it with async/await functionality and transaction helpers
 
 ## Configuration Specifications
 

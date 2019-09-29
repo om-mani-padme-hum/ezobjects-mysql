@@ -12,9 +12,6 @@
 const url = require(`url`);
 const moment = require(`moment`);
 
-/** Require local modules */
-const mysqlConnection = require(`./mysql-connection`);
-
 /** Figure out proper parent scope between node (global) and browser (window) */
 let parent;
 
@@ -593,7 +590,7 @@ module.exports.createTable = async (obj, db) => {
   createQuery += `)`;
     
   /** Await query execution and return result */
-  return await db.query(createQuery);
+  return await db.awaitQuery(createQuery);
 };
 
 /**
@@ -685,7 +682,7 @@ module.exports.createClass = (obj) => {
     parent[obj.className].prototype.delete = async function (db) { 
       /** If the argument is a valid database, delete the record */
       if ( typeof db == `object` )
-        await db.query(`DELETE FROM ${obj.tableName} WHERE id = ?`, [this.id()]);
+        await db.awaitQuery(`DELETE FROM ${obj.tableName} WHERE id = ?`, [this.id()]);
 
       /** Otherwise throw TypeError */
       else
@@ -797,7 +794,7 @@ module.exports.createClass = (obj) => {
         query += `)`;
         
         /** Execute query to add record to database */
-        const result = await arg1.query(query, params);
+        const result = await arg1.awaitQuery(query, params);
 
         /** Store the resulting insert ID */
         this.id(result.insertId);
@@ -858,7 +855,7 @@ module.exports.createClass = (obj) => {
           query += `WHERE id = ?`;
         
         /** Execute query to load record properties from the database */
-        const result = await db.query(query, [arg1]);
+        const result = await db.awaitQuery(query, [arg1]);
 
         /** If a record with that ID doesn`t exist, return null */
         if ( !result[0] )
@@ -1077,7 +1074,7 @@ module.exports.createClass = (obj) => {
         query += ` WHERE id = ?`;
         
         /** Execute query to update record in database */
-        await arg1.query(query, params);
+        await arg1.awaitQuery(query, params);
       } 
 
       /** Otherwise throw TypeError */
@@ -1096,6 +1093,3 @@ module.exports.createClass = (obj) => {
    */
   Object.defineProperty(parent[obj.className], `name`, { value: obj.className });
 };
-
-/** Re-export MySQLConnection */
-module.exports.MySQLConnection = mysqlConnection.MySQLConnection;

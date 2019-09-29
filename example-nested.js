@@ -2,10 +2,11 @@ const ezobjects = require(`./index`);
 const fs = require(`fs`);
 const express = require(`express`);
 const models = require(`./example-nested-models`);
+const mysql = require(`mysql-await`);
 
 const app = express();
 
-const db = new ezobjects.MySQLConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
+const db = mysql.createConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
 
 app.get(`/workers/load/:id`, async (req, res, next) => {
   res.setHeader(`Access-Control-Allow-Origin`, `*`);
@@ -32,9 +33,7 @@ app.get(`/managers/load/:id`, async (req, res, next) => {
   }
 });
 
-app.listen(4000);
-
-(async () => {
+app.listen(4000, async () => {
   await ezobjects.createTable(models.configWorker, db);
   await ezobjects.createTable(models.configManager, db);
   
@@ -54,4 +53,4 @@ app.listen(4000);
   await worker1.insert(db);
   await worker2.insert(db);
   await manager.insert(db);
-})();
+});

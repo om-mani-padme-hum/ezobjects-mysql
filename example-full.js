@@ -1,12 +1,13 @@
 /** Require external modules */
 const fs = require(`fs`);
 const util = require(`util`);
+const mysql = require(`mysql-await`);
 
 /** Require internal modules */
 const ezobjects = require(`./index`);
 
 /** Connect to the MySQL database using login info stored externally */
-const db = new ezobjects.MySQLConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
+const db = mysql.createConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
 
 /** 
  * Configure a new EZ Object class called Example that tests out the
@@ -59,8 +60,8 @@ const configExample = {
     { name: `functionExample`, type: `function` },
     { name: `functionExample2`, type: `function`, store: true },
     { name: `plainObjectExample`, type: `object` },
-    { name: `ezobjectTypeExample`, type: `OtherObj` },
-    { name: `ezobjectInstanceExample`, instanceOf: `OtherObj` },
+    { name: `ezobjectTypeExample`, type: `OtherObj`, store: false },
+    { name: `ezobjectInstanceExample`, instanceOf: `OtherObj`, store: false },
     { name: `ezobjectInstanceExample2`, instanceOf: `OtherObj`, store: false },
     
     { name: `bitArrayExample`, type: `Array`, arrayOf: { type: `bit`, length: 2 } },
@@ -100,8 +101,8 @@ const configExample = {
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
     { name: `functionArrayExample2`, type: `Array`, arrayOf: { type: `function`, store: true } },
     { name: `plainObjectArrayExample`, type: `Array`, arrayOf: { type: `object` } },
-    { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` } },
-    { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` } },
+    { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` }, store: false },
+    { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` }, store: false },
     { name: `ezobjectInstanceArrayExample2`, type: `Array`, arrayOf: { instanceOf: `OtherObj` }, store: false },
   ],
   indexes: [
@@ -279,6 +280,6 @@ ezobjects.createClass(configExtendedObj);
     console.log(err.message);
   } finally {
     /** Close database connection */
-    db.close();
+    await db.awaitEnd();
   }
 })();

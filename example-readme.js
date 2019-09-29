@@ -1,6 +1,7 @@
 const ezobjects = require(`./index`);
 const fs = require(`fs`);
 const moment = require(`moment`);
+const mysql = require(`mysql-await`);
 
 /** 
  * Load external MySQL configuration which uses the following JSON 
@@ -18,7 +19,7 @@ const configMySQL = JSON.parse(fs.readFileSync(`mysql-config.json`));
  * Create a connection object for the MySQL database using our MySQL 
  * module async/await wrapper.
  */
-const db = new ezobjects.MySQLConnection(configMySQL);
+const db = mysql.createConnection(configMySQL);
 
 /** 
  * Configure a new EZ Object called DatabaseRecord with the required 
@@ -128,6 +129,6 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
     console.log(err.message);
   } finally {
     /** Close database connection */
-    db.close();
+    await  db.awaitEnd();
   }
 })();
