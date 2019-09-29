@@ -717,7 +717,7 @@ module.exports.createClass = (obj) => {
       }
 
       /** If the argument is a valid database, insert record into database and capture ID */
-      else if ( typeof arg1 == `object` && arg1.constructor.name == `MySQLConnection` ) {
+      else if ( typeof arg1 == `object` ) {
         /** Create array for storing values to insert */
         const params = [];
 
@@ -1020,7 +1020,7 @@ module.exports.createClass = (obj) => {
       }
 
       /** If the argument is a valid database, update database record */
-      else if ( typeof arg1 == `object` && arg1.constructor.name == `MySQLConnection` ) {
+      else if ( typeof arg1 == `object` ) {
         /** Create array for storing values to update */
         const params = [];
 
