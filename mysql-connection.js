@@ -275,8 +275,6 @@ class MySQLConnection {
           
           resolve(err);
         });
-      } else {
-        resolve();
       }
     });
   }

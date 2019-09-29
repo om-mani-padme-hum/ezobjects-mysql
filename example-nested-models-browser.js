@@ -714,7 +714,7 @@ module.exports.createClass = (obj) => {
     /** Create MySQL delete method on prototype */
     parent[obj.className].prototype.delete = async function (db) { 
       /** If the argument is a valid database, delete the record */
-      if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
+      if ( typeof db == `object` )
         await db.query(`DELETE FROM ${obj.tableName} WHERE id = ?`, [this.id()]);
 
       /** Otherwise throw TypeError */
@@ -848,7 +848,7 @@ module.exports.createClass = (obj) => {
       this.init();
       
       /** If the first argument is a valid database and the second is a number, load record from database by ID */
-      if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` && db.constructor.name == `MySQLConnection` ) {
+      if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` ) {
         if ( typeof arg1 == `string` && typeof obj.otherSearchField !== `string` )
           throw new Error(`${obj.className}.load(): String argument is not a URL so loading from database, but no 'otherSearchField' configured.`);
                 
@@ -969,7 +969,7 @@ module.exports.createClass = (obj) => {
               else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` )
                 result[obj.properties[i].name] = result[obj.properties[i].name].join(`,`);
               
-              if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
+              if ( typeof db == `object` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i], db));
               else
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i]));
@@ -1007,7 +1007,7 @@ module.exports.createClass = (obj) => {
               else if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name].constructor.name == `Array` )
                 arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
               
-              if ( typeof db == `object` && db.constructor.name == `MySQLConnection` )
+              if ( typeof db == `object` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
               else
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i]));
