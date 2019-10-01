@@ -1,5 +1,5 @@
 /**
- * @module ezobjects-mysql
+ * @module ezobjects
  * @copyright 2018 Rich Lowe
  * @license MIT
  * @description Easy automatic class creation using simple configuration objects.  Capable
@@ -14,7 +14,6 @@ const moment = require(`moment`);
 
 /** Create object to hold our created EZ objects */
 module.exports.objects = {};
-
 
 /**
  * @signature ezobjects.instanceOf(obj, constructorName)
@@ -44,7 +43,13 @@ module.exports.instanceOf = (obj, constructorName) => {
   return found;
 };
 
-/** Define default set transform for non-array types */
+/** 
+ * @signature setTransform(x, property)
+ * @param x string|int ID # or otherSearchField
+ * @param property object EZ Object property configuration
+ * @return mixed Input transformed to output according to transform method
+ * @description Define default set transform for non-array types 
+ */
 const setTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
@@ -81,7 +86,13 @@ const setTransform = (x, property) => {
     return x === null ? null : x;
 };
 
-/** Define default set transform for array types */
+/** 
+ * @signature setArrayTransform(x, property)
+ * @param x string|int ID # or otherSearchField
+ * @param property object EZ Object property configuration
+ * @return mixed Input transformed to output according to array transform method
+ * @description Define default set transform for array types 
+ */
 const setArrayTransform = (x, property) => {
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
@@ -146,6 +157,13 @@ const setArrayTransform = (x, property) => {
   return x === null ? null : arr;
 };
 
+/** 
+ * @signature stripUnderscores(obj)
+ * @param obj Object
+ * @return obj Object
+ * @description Returns object with all properties that have underscores replaced with underscore
+ * removed versions.
+ */
 const stripUnderscores = (obj) => {
   /** Loop through each key/val pair in data */
   Object.keys(obj).forEach((key) => {
@@ -235,7 +253,11 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`,`), i_max = list.length; i < i_max; i++ ) { arr.push(await (new module.exports.objects[typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }
 ];
 
-/** Validate configuration for a single property */
+/** 
+ * @signature validatePropertyConfig(property)
+ * @param property Object Property configuration
+ * @description Validate configuration for a single property.
+ */
 function validatePropertyConfig(property) {  
   /** If name is missing or not a string, throw error */
   if ( typeof property.name !== `string` )
@@ -406,7 +428,11 @@ function validatePropertyConfig(property) {
     property.allowNull = true;
 }
 
-/** Validate configuration for a class */
+/** 
+ * @signature validateClassConfig(property)
+ * @param property Object Class configuration
+ * @description Validate configuration for a single class.
+ */
 function validateClassConfig(obj) {
   /** If configuration is not plain object, throw error */
   if ( typeof obj != `object` || obj.constructor.name != `Object` )
@@ -430,16 +456,20 @@ function validateClassConfig(obj) {
     
     validatePropertyConfig(property);
   });
-}
+};
 
-/** Validate configuration for a creating MySQL table based on class configuration */
+/** 
+ * @signature validateTableConfig(property)
+ * @param property Object Table configuration
+ * @description Validate configuration for a single table.
+ */
 function validateTableConfig(obj) {  
   /** If configuration has missing or invalid 'tableName' configuration, throw error */
   if ( typeof obj.tableName !== `string` || !obj.tableName.match(/^[a-z_]+$/) )
     throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z_'.`);
 
   validateClassConfig(obj);
-}
+};
 
 /*
  * @signature ezobjects.createTable(obj, db)

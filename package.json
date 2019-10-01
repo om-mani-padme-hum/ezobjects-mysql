@@ -38,7 +38,7 @@
     "mysql-await": "^2.0.1"
   },
   "devDependencies": {
-    "docket-parser": "^0.7.2",
+    "docket-parser": "^0.7.3",
     "express": "^4.16.4"
   },
   "bugs": {

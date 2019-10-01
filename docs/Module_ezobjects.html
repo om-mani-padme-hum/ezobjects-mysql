@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script src="jquery.min.js"></script>
+    <script src="popper.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <style>
+      code { 
+        background-color: #F2F2F2;
+      }
+      
+      .object-link {
+        color: #28a745;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='top' class='container'>
+      <div class='row'>
+        <div class='col'>
+          <h1 class='display-4 mb-0'>EZ Objects v8.0.1</h1>
+        </div>
+      </div>
+      <hr>
+      
+        <div class='row'>
+        <div class='col'>
+          <h2>Table of Contents</h2>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col'>
+          <ul>
+                        <li class='py-1'><a class='text-success' href='#m-ezobjects'>Module: ezobjects</a></li>
+            <ul>
+                <li class='py-1'><a class='text-success' href='#s-ezobjects-instanceOf'>ezobjects.instanceOf</a></li>
+                <li class='py-1'><a class='text-success' href='#s-ezobjects-createTable'>ezobjects.createTable</a></li>
+                <li class='py-1'><a class='text-success' href='#s-ezobjects-createClass'>ezobjects.createClass</a></li>
+            </ul>
+
+          </ul>
+        </div>
+      </div>
+      
+      <hr>
+      <div id='m-ezobjects' class='row'>
+        <div class='col'>
+          <h2 class='mt-1'>Module: ezobjects <small>[<a class='text-success' href='#top'>top</a>]</small></h2>
+        </div>
+      </div>
+      <div class='pl-2'>
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <p>
+        
+        
+              <small>Copyright &copy; 2018 Rich Lowe</small>
+              <br>
+        
+        
+        
+            </p>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <p>Easy automatic class creation using simple configuration objects.  Capable of automatically creating a matching MySQL table and generating delete(), insert(), load(),  and update() methods in addition to the constructor, initializer, and getters/setters for all configured properties.</p>
+          </div>
+        </div>
+        
+      </div>
+      
+      <div id='s-ezobjects-instanceOf' class='row'>
+        <div class='col'>
+          <h4 class='mt-2 pl-3'>ezobjects.instanceOf(obj, constructorName) <small>[<a class='text-success' href='#top'>top</a>]</small></h4>
+        </div>
+      </div>
+      <div class='pl-4'>
+        
+        
+        
+        
+        
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <ul>
+        
+              <li class='py-1'><code class='text-dark p-1'>obj</code> &lt;<a class='text-success' href='#'>Object</a>&gt; </li>
+        
+              <li class='py-1'><code class='text-dark p-1'>constructorName</code> &lt;<a class='text-success' href='#'>string</a>&gt; </li>
+        
+        
+        
+            </ul>
+          </div>
+        </div>
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <p>A function for determining if an object instance's prototype chain includes a constructor named <code class='text-dark p-1'>constructorName</code>.</p>
+          </div>
+        </div>
+        
+      </div>
+
+      <div id='s-ezobjects-createTable' class='row'>
+        <div class='col'>
+          <h4 class='mt-2 pl-3'>ezobjects.createTable(obj, db) <small>[<a class='text-success' href='#top'>top</a>]</small></h4>
+        </div>
+      </div>
+      <div class='pl-4'>
+        
+        
+        
+        
+        
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <ul>
+        
+              <li class='py-1'><code class='text-dark p-1'>obj</code> &lt;<a class='text-success' href='#'>Object</a>&gt; Configuration object</li>
+        
+              <li class='py-1'><code class='text-dark p-1'>db</code> &lt;<a class='text-success' href='#'>MySQLConnection</a>&gt; </li>
+        
+        
+        
+            </ul>
+          </div>
+        </div>
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <p>A function for automatically generating a MySQL table, if it doesn't already exist, based on the values in the provided configuration object.</p>
+          </div>
+        </div>
+        
+      </div>
+
+      <div id='s-ezobjects-createClass' class='row'>
+        <div class='col'>
+          <h4 class='mt-2 pl-3'>ezobjects.createClass(obj) <small>[<a class='text-success' href='#top'>top</a>]</small></h4>
+        </div>
+      </div>
+      <div class='pl-4'>
+        
+        
+        
+        
+        
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <ul>
+        
+              <li class='py-1'><code class='text-dark p-1'>obj</code> &lt;<a class='text-success' href='#'>Object</a>&gt; Configuration object</li>
+        
+        
+        
+            </ul>
+          </div>
+        </div>
+        
+        
+        <div class='row'>
+          <div class='col'>
+            <p>A function for automatically generating a class object based on the values in the provided configuration object.</p>
+          </div>
+        </div>
+        
+      </div>
+
+      <footer>
+        <div class='row'>
+          <div class='col text-center py-3'>
+            Docker JavaScript Documentation Generator
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
