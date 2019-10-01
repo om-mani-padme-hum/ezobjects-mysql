@@ -37,7 +37,7 @@ const configDatabaseRecord = {
  * to a MySQL table directly, as it has no `tableName` property, but
  * it can be extended by EZ Objects that are linked to tables.
  */
-ezobjects.createClass(configDatabaseRecord);
+const DatabaseRecord = ezobjects.createClass(configDatabaseRecord);
 
 /** 
  * Configure a new EZ Object called UserAccount that extends from the 
@@ -63,7 +63,7 @@ const configUserAccount = {
 };
 
 /** Create the UserAccount class */
-ezobjects.createClass(configUserAccount);
+const UserAccount = ezobjects.createClass(configUserAccount);
 
 /** 
  * Create a new UserAccount called `userAccount`, initializing with 

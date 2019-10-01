@@ -60,8 +60,8 @@ const configExample = {
     { name: `functionExample`, type: `function` },
     { name: `functionExample2`, type: `function`, store: true },
     { name: `plainObjectExample`, type: `object` },
-    { name: `ezobjectTypeExample`, type: `OtherObj`, store: false },
-    { name: `ezobjectInstanceExample`, instanceOf: `OtherObj`, store: false },
+    { name: `ezobjectTypeExample`, type: `OtherObj` },
+    { name: `ezobjectInstanceExample`, instanceOf: `OtherObj` },
     { name: `ezobjectInstanceExample2`, instanceOf: `OtherObj`, store: false },
     
     { name: `bitArrayExample`, type: `Array`, arrayOf: { type: `bit`, length: 2 } },
@@ -101,8 +101,8 @@ const configExample = {
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
     { name: `functionArrayExample2`, type: `Array`, arrayOf: { type: `function`, store: true } },
     { name: `plainObjectArrayExample`, type: `Array`, arrayOf: { type: `object` } },
-    { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` }, store: false },
-    { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` }, store: false },
+    { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` } },
+    { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` } },
     { name: `ezobjectInstanceArrayExample2`, type: `Array`, arrayOf: { instanceOf: `OtherObj` }, store: false },
   ],
   indexes: [
@@ -112,7 +112,7 @@ const configExample = {
 };
 
 /** Create the Example class */
-ezobjects.createClass(configExample);
+const Example = ezobjects.createClass(configExample);
 
 /** Configure a simple `other` object for use in the example */
 const configOtherObj = {
@@ -125,7 +125,7 @@ const configOtherObj = {
 };
 
 /** Create the OtherObj class */
-ezobjects.createClass(configOtherObj);
+const OtherObj = ezobjects.createClass(configOtherObj);
 
 /** Configure an extended object for use in the example */
 const configExtendedObj = {
@@ -136,7 +136,7 @@ const configExtendedObj = {
 };
 
 /** Create the ExtendedObj class */
-ezobjects.createClass(configExtendedObj); 
+const ExtendedObj = ezobjects.createClass(configExtendedObj); 
 
 /** Self-executing async wrapper so we can await results */
 (async () => {
@@ -265,6 +265,8 @@ ezobjects.createClass(configExtendedObj);
     
     /** Create a second example object */
     const example2 = new Example();
+    
+    console.log(`Loading previous example by ID# ${id}...`);
 
     /** Attempt to load the original example from the database into example2 */
     await example2.load(id, db);

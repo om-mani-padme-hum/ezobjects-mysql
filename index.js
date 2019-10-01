@@ -12,13 +12,37 @@
 const url = require(`url`);
 const moment = require(`moment`);
 
-/** Figure out proper parent scope between node (global) and browser (window) */
-let parent;
+/** Create object to hold our created EZ objects */
+module.exports.objects = {};
 
-if ( typeof window !== `undefined` )
-  parent = window;
-else
-  parent = global;
+
+/**
+ * @signature ezobjects.instanceOf(obj, constructorName)
+ * @param obj Object
+ * @param constructorName string
+ * @description A function for determining if an object instance's
+ * prototype chain includes a constructor named `constructorName`.
+ */
+module.exports.instanceOf = (obj, constructorName) => {
+  let found = false;
+  
+  /** Recursive function for determining if ancestral prototype is an instance of the given `constructorName` */
+  const isInstance = (obj) => {
+    /** If it is an instance of `constructorName`, set found to true */
+    if ( obj && obj.constructor && obj.constructor.name == constructorName )
+      found = true;
+    
+    /** If this is an extension of a more fundamental prototype, recursively check it too */
+    if ( obj && obj.__proto__ )
+      isInstance(obj.__proto__);
+  };
+  
+  /** See if `obj` is an instance of `constructorName` */
+  isInstance(obj);
+  
+  /** Return the result */
+  return found;
+};
 
 /** Define default set transform for non-array types */
 const setTransform = (x, property) => {
@@ -172,7 +196,7 @@ const ezobjectTypes = [
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `other`, jsType: `object`, mysqlType: `int`, default: null, setTransform: setTransform, saveTransform: x => x ? x.id() : -1, loadTransform: async (x, property, db) => await (new parent[typeof property.type === `string` ? property.originalType : property.instanceOf]).load(x, db) },
+  { type: `other`, jsType: `object`, mysqlType: `int`, default: null, setTransform: setTransform, saveTransform: x => x ? x.id() : -1, loadTransform: async (x, property, db) => await (new module.exports.objects[typeof property.type === `string` ? property.originalType : property.instanceOf]).load(x, db) },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
@@ -208,7 +232,7 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`,`), i_max = list.length; i < i_max; i++ ) { arr.push(await (new parent[typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.id()).join(`,`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`,`), i_max = list.length; i < i_max; i++ ) { arr.push(await (new module.exports.objects[typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf]).load(parseInt(list[i]), db)); } return arr; } }
 ];
 
 /** Validate configuration for a single property */
@@ -243,10 +267,6 @@ function validatePropertyConfig(property) {
     /** If type is `ARRAY` with `arrayOf` containing bad or missing type, throw error */
     if ( typeof property.arrayOf.type != `string` && typeof property.arrayOf.instanceOf != `string` )
       throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
-
-    /** Convert array of type to lower-case for comparison to EZ object types */
-    if ( typeof property.arrayOf.type == `string` )
-      property.arrayOf.type = property.arrayOf.type.toLowerCase();
     
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
     property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
@@ -594,34 +614,6 @@ module.exports.createTable = async (obj, db) => {
 };
 
 /**
- * @signature ezobjects.instanceOf(obj, constructorName)
- * @param obj Object
- * @param constructorName string
- * @description A function for determining if an object instance's
- * prototype chain includes a constructor named `constructorName`.
- */
-module.exports.instanceOf = (obj, constructorName) => {
-  let found = false;
-  
-  /** Recursive function for determining if ancestral prototype is an instance of the given `constructorName` */
-  const isInstance = (obj) => {
-    /** If it is an instance of `constructorName`, set found to true */
-    if ( obj && obj.constructor && obj.constructor.name == constructorName )
-      found = true;
-    
-    /** If this is an extension of a more fundamental prototype, recursively check it too */
-    if ( obj && obj.__proto__ )
-      isInstance(obj.__proto__);
-  };
-  
-  /** See if `obj` is an instance of `constructorName` */
-  isInstance(obj);
-  
-  /** Return the result */
-  return found;
-};
-
-/**
  * @signature ezobjects.createClass(obj)
  * @param obj Object Configuration object
  * @description A function for automatically generating a class object based on
@@ -632,7 +624,7 @@ module.exports.createClass = (obj) => {
   validateClassConfig(obj);
 
   /** Create new class on global scope */
-  parent[obj.className] = class extends (obj.extends || Object) {
+  module.exports.objects[obj.className] = class extends (obj.extends || Object) {
     /** Create constructor */
     constructor(data = {}) {
       /** Initialize super */
@@ -663,7 +655,7 @@ module.exports.createClass = (obj) => {
   /** Loop through each property in the obj */
   obj.properties.forEach((property) => {  
     /** Create class method on prototype */
-    parent[obj.className].prototype[property.name] = function (arg) {
+    module.exports.objects[obj.className].prototype[property.name] = function (arg) {
       /** Getter */
       if ( arg === undefined ) 
         return this[`_${property.name}`]; 
@@ -679,7 +671,7 @@ module.exports.createClass = (obj) => {
   /** If object has valid tableName property, it's meant to be connected to a MySQL database, so add MySQL class methods */
   if ( typeof obj.tableName == `string` && obj.tableName.match(/^[a-z_]+$/) ) {
     /** Create MySQL delete method on prototype */
-    parent[obj.className].prototype.delete = async function (db) { 
+    module.exports.objects[obj.className].prototype.delete = async function (db) { 
       /** If the argument is a valid database, delete the record */
       if ( typeof db == `object` )
         await db.awaitQuery(`DELETE FROM ${obj.tableName} WHERE id = ?`, [this.id()]);
@@ -693,7 +685,7 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL insert method on prototype */
-    parent[obj.className].prototype.insert = async function (arg1) { 
+    module.exports.objects[obj.className].prototype.insert = async function (arg1) { 
       /** Provide option for inserting record from browser if developer implements ajax backend */
       if ( typeof window !== `undefined` && typeof arg1 == `string` ) {
         /** Attempt to parse the URL */
@@ -810,7 +802,7 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL load method on prototype */
-    parent[obj.className].prototype.load = async function (arg1, db) {
+    module.exports.objects[obj.className].prototype.load = async function (arg1, db) {
       /** Re-initialize to defaults */
       this.init();
       
@@ -975,7 +967,7 @@ module.exports.createClass = (obj) => {
                 else if ( arg1[obj.properties[i].name].constructor.name == `Array` )
                   arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
               }
-              
+                            
               if ( typeof db == `object` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
               else
@@ -998,7 +990,7 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL update method on prototype */
-    parent[obj.className].prototype.update = async function (arg1) { 
+    module.exports.objects[obj.className].prototype.update = async function (arg1) { 
       /** Provide option for inserting record from browser if developer implements ajax backend */
       if ( typeof window !== `undefined` && typeof arg1 == `string` ) {
         /** Attempt to parse the URL */
@@ -1091,5 +1083,8 @@ module.exports.createClass = (obj) => {
    * Because we`re creating this object dynamically, we need to manually give it a name 
    * attribute so we can identify it by its type when we want to.
    */
-  Object.defineProperty(parent[obj.className], `name`, { value: obj.className });
+  Object.defineProperty(module.exports.objects[obj.className], `name`, { value: obj.className });
+  
+  /** Return created class */
+  return module.exports.objects[obj.className];
 };
