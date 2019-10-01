@@ -474,7 +474,7 @@ function validateTableConfig(obj) {
 /*
  * @signature ezobjects.createTable(obj, db)
  * @param obj Object Configuration object
- * @param db MySQLConnection
+ * @param db AwaitConnection
  * @description A function for automatically generating a MySQL table, if it doesn't already
  * exist, based on the values in the provided configuration object.
  */
