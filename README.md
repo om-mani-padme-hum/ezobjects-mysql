@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v8.0.2
+# EZ Objects - MySQL Edition - v9.0.0
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -15,13 +15,10 @@ createClass() function.
 * [Contributing](#contributing)
 * [License](#license)
 
-### Version 8
+### Version 9
 
-Finally fixed the loading of sub-objects by keeping internal track of all EZ Objects created.  Now fully functional!
-
-### Version 7
-
-Removed local MySQL class from EZ Objects and converted examples and API to use that of improved version now located at [mysql-await](https://github.com/om-mani-padme-hum/mysql-await).
+Finally fixed the loading of sub-objects by keeping internal track of all EZ Objects created, regardless of
+whether defined by type: or instanceOf:.  Now fully functional!
 
 ### Want EZ Objects Without The MySQL?
 
