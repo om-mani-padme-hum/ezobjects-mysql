@@ -214,7 +214,7 @@ const ezobjectTypes = [
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `other`, jsType: `object`, mysqlType: `text`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : ``, loadTransform: async (x, property, db) => { const data = x.split(`,`); return await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db); } },
+  { type: `other`, jsType: `object`, mysqlType: `text`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db) : null; } },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
