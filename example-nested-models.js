@@ -10,7 +10,7 @@ const configWorker = {
   ]
 };
 
-ezobjects.createClass(configWorker);
+const Worker = ezobjects.createClass(configWorker);
 
 const configManager = {
   className: `Manager`,
@@ -23,7 +23,7 @@ const configManager = {
   ]
 };
 
-ezobjects.createClass(configManager);
+const Manager = ezobjects.createClass(configManager);
 
 module.exports.configManager = configManager;
 module.exports.configWorker = configWorker;

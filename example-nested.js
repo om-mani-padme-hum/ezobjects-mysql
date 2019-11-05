@@ -26,7 +26,8 @@ app.get(`/managers/load/:id`, async (req, res, next) => {
   try {
     const manager = await (new models.Manager()).load(req.params.id.match(/^[0-9]+$/) ? parseInt(req.params.id) : req.params.id, db);
 
-    console.log(manager);
+    manager._workers = manager.workers().map(x => `${x.constructor.name},${x.id()}`).join(`|`);
+
     res.send(JSON.stringify(manager));
   } catch ( err ) {
     res.send(JSON.stringify({ error: err.message }));

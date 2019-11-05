@@ -214,7 +214,7 @@ const ezobjectTypes = [
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `other`, jsType: `object`, mysqlType: `text`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db) : null; } },
+  { type: `other`, jsType: `object`, mysqlType: `text`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { console.log(x); if ( !x ) return null; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db) : null; } },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
@@ -250,7 +250,7 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db)); } return arr; } }
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { console.log(list[i]); const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]).load(parseInt(data[1]), db)); } return arr; } }
 ];
 
 /** 
@@ -951,11 +951,7 @@ module.exports.createClass = (obj) => {
             
             /** Append property in object */
             if ( typeof result[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                result[obj.properties[i].name] = result[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
-              else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                result[obj.properties[i].name] = parseInt(result[obj.properties[i].name]._id);
-              else if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` )
+              if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` )
                 result[obj.properties[i].name] = result[obj.properties[i].name].join(`,`);
               
               if ( typeof db == `object` )
@@ -990,11 +986,7 @@ module.exports.createClass = (obj) => {
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
               if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name] !== null ) {
-                if ( arg1[obj.properties[i].name].constructor.name == `Array` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                  arg1[obj.properties[i].name] = arg1[obj.properties[i].name].map(x => parseInt(x._id)).join(`,`);
-                else if ( arg1[obj.properties[i].name].constructor.name == `Object` && obj.properties[i].ezobjectType.arrayOfType == `other` )
-                  arg1[obj.properties[i].name] = parseInt(arg1[obj.properties[i].name]._id);
-                else if ( arg1[obj.properties[i].name].constructor.name == `Array` )
+                if ( arg1[obj.properties[i].name].constructor.name == `Array` )
                   arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
               }
                             
