@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.4
+# EZ Objects - MySQL Edition - v10.0.5
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -425,7 +425,7 @@ See the following for how to configure your EZ Objects:
 
 ### Default transforms
 
-There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](blob/master/index.js#L182)
+There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](index.js#L182)
 
 ## Wasted Space
 
@@ -449,11 +449,11 @@ default MySQL type in this case if you have thousands of users in your database,
 
 There are a couple other examples available that use a broader range of the abilities of EZ Objects MySQL:
 
-* [Example Full](blob/master/example-full.js) - An example where all data types are demonstrated to be operationald, including loading of custom child objects, along with an example where the `mysqlType`, `saveTransform`, and `loadTransform` of a property configuration are overridden.
-* [Example Nested Server](blob/master/example-nested.js) - An example where client-side loading of EZ Objects is demonstrated by way of a browserify'd EZ Object model configurations, including loading of custom child objects.
-* [Example Nested Models](blob/master/example-nested-models.js)
-* [Example Nested Client](blob/master/example-nested.html)
-* [Example Nested Browserify Script](blob/master/example-nested-browserify.sh)
+* [Example Full](example-full.js) - An example where all data types are demonstrated to be operationald, including loading of custom child objects, along with an example where the `mysqlType`, `saveTransform`, and `loadTransform` of a property configuration are overridden.
+* [Example Nested Server](example-nested.js) - An example where client-side loading of EZ Objects is demonstrated by way of a browserify'd EZ Object model configurations, including loading of custom child objects.
+* [Example Nested Models](example-nested-models.js)
+* [Example Nested Client](example-nested.html)
+* [Example Nested Browserify Script](example-nested-browserify.sh)
 
 ## Contributing
 
