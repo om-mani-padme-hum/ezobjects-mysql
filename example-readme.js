@@ -1,6 +1,5 @@
 const ezobjects = require(`./index`);
 const fs = require(`fs`);
-const moment = require(`moment`);
 const mysql = require(`mysql-await`);
 
 /** 
@@ -129,6 +128,6 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
     console.log(err.message);
   } finally {
     /** Close database connection */
-    await  db.awaitEnd();
+    await db.awaitEnd();
   }
 })();

@@ -1,20 +1,21 @@
-# EZ Objects - MySQL Edition - v10.0.1
+# EZ Objects - MySQL Edition - v10.0.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
-MySQL database tables by way of a mix of insert/update/load/delete class method signatures.  All you have 
-to do is create simple class configurations for each of your objects and then create them using the 
-createClass() function.
+MySQL database tables by way of a mix of automatically generated [insert](#myobjectinsertdb)/[update](#myobjectupdatedb)/[load](#myobjectloadfieldvalue-db)/[delete](#myobjectdeletedb) class method signatures.  All you have 
+to do is create simple class configurations for each of your objects and then create them using the exported 
+[ezobjects.createClass()](#ezobjectscreateclassobjectconfig) function.
 
 * [Installation](#installation)
-* [Important Notes](#important-notes)
 * [Basic Example](#basic-example)
 * [EZ Object Types](#ez-object-types)
+* [Important - Required Property](#one-property-is-required)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Module Exports](#module-exports)
 * [Configuration Specifications](#configuration-specifications)
 * [Wasted Space](#wasted-space)
+* [See Also](#see-also)
 * [Contributing](#contributing)
 * [License](#license)
 
@@ -31,17 +32,15 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 
 `npm i ezobjects-mysql`
 
-## Important Notes
-
-Each of your MySQL EZ Objects **must** include an `int` property named `id` that will be automatically 
-configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
-The `load` method will generally be based off the `id` field, unless you specify a `otherSearchProperty` to load 
-by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
-module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
-a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
-fishy is going on.
-
 ## Basic Example
+
+It might be best to start off with a basic example where I do the following:
+
+1) Configure an EZ Object called `DatabaseRecord`
+2) Configure another EZ Object called `UserAccount` that extends from `DatabaseRecord`
+3) Create the classes for both using the `createClass` EZ Objects export
+4) Create my *user_accounts* MySQL table using the `createTable` export (if it doesn't already exist)
+5) Demonstrate the getters, setters, and delete/insert/load/update class methods that EZ Objects automatically provides.
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
@@ -129,7 +128,7 @@ const userAccount = new UserAccount({
  */
 console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
 
-/** Let's use a self-executing async wrapper so we can await results */
+/** Let's use a self-executing async function so we can await results */
 (async () => {
   try {
     /** Create `user_accounts` table if it doesn`t already exist */
@@ -174,7 +173,7 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
     console.log(err.message);
   } finally {
     /** Close database connection */
-    await  db.awaitEnd();
+    await db.awaitEnd();
   }
 })();
 ```
@@ -274,6 +273,16 @@ as the default MySQL type.
 | **Array\[function]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[object]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[MyEZObject]** | `Array` | `[]` | TEXT |
+
+## One Property Is Required
+
+Each of your MySQL EZ Objects **must** include an `int` property named `id` that will be automatically 
+configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
+The `load` method will generally be based off the `id` field, unless you specify a `otherSearchProperty` to load 
+by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
+module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
+a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
+fishy is going on.
 
 ## Basic EZ Object Method Signatures
 
@@ -417,7 +426,7 @@ See the following for how to configure your EZ Objects:
 
 ### Default transforms
 
-There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](https://github.com/om-mani-padme-hum/ezobjects-mysql/blob/master/index.js#L182)
+There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](blob/master/index.js#L182)
 
 ## Wasted Space
 
@@ -436,6 +445,16 @@ in the database by EZ Objects, would not exceed the 255 bytes provided by a TINY
 default MySQL type in this case if you have thousands of users in your database, like so:
 
 `{ name: 'permissions', type: 'array', mysqlType: 'tinytext', arrayOf: { type: 'int' } }`
+
+## See Also
+
+There are a couple other examples available that use a broader range of the abilities of EZ Objects MySQL:
+
+* [Example Full](blob/master/example-full.js) - An example where all data types are demonstrated to be operationald, including loading of custom child objects, along with an example where the `mysqlType`, `saveTransform`, and `loadTransform` of a property configuration are overridden.
+* [Example Nested Server](blob/master/example-nested.js) - An example where client-side loading of EZ Objects is demonstrated by way of a browserify'd EZ Object model configurations, including loading of custom child objects.
+* [Example Nested Models](blob/master/example-nested-models.js)
+* [Example Nested Client](blob/master/example-nested.html)
+* [Example Nested Browserify Script](blob/master/example-nested-browserify.sh)
 
 ## Contributing
 

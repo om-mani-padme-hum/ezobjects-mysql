@@ -454,7 +454,7 @@ function validateClassConfig(obj) {
     
     validatePropertyConfig(property);
   });
-};
+}
 
 /** 
  * @signature validateTableConfig(property)
@@ -467,7 +467,7 @@ function validateTableConfig(obj) {
     throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z_'.`);
 
   validateClassConfig(obj);
-};
+}
 
 /*
  * @signature ezobjects.createTable(obj, db)
