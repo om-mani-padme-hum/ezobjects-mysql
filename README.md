@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.3
+# EZ Objects - MySQL Edition - v10.0.4
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -35,8 +35,8 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 ## Required Property
 
 **IMPORTANT:** Each of your MySQL EZ Objects **must** include a property of EZ Object type `int` named `id` that will be automatically 
-configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
-The `load` method will generally be based off the `id` field, unless you specify a [otherSearchProperty](#a-table-linked-mysql-object-configuration-can-also-have-the-following) to load 
+configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  The `load` method 
+will generally be based off the `id` field, unless you specify a [otherSearchProperty](#a-table-linked-mysql-object-configuration-can-also-have-the-following) to load 
 by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
 module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
 a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
@@ -48,9 +48,11 @@ It might be best to start off with a basic example where I do the following:
 
 1) Configure an EZ Object called `DatabaseRecord`
 2) Configure another EZ Object called `UserAccount` that extends from `DatabaseRecord`
-3) Create the classes for both using the [ezobjects.createClass()](#ezobjectscreateclassobjectconfig) EZ Objects export
-4) Create my *user_accounts* MySQL table using the [ezobjects.createTable()](#ezobjectscreatetableobjectconfig-db) export (if it doesn't already exist)
+3) Create the classes for both using the [ezobjects.createClass()](#ezobjectscreateclassobjectconfig) function
+4) Create my *user_accounts* MySQL table using the [ezobjects.createTable()](#ezobjectscreatetableobjectconfig-db) function (if it doesn't already exist)
 5) Demonstrate the [getters](#myobjectmyproperty), [setters](#myobjectmypropertyvalue), and [insert](#myobjectinsertdb)/[update](#myobjectupdatedb)/[load](#myobjectloadfieldvalue-db)/[delete](#myobjectdeletedb) class methods that EZ Objects automatically provides.
+
+See below:
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
@@ -220,19 +222,16 @@ UserAccount {
 
 ## Module Exports
 
-The EZ Objects module exports two functions:
+The EZ Objects module exports three functions:
 
 ### ezobjects.createTable(objectConfig, db)
-A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist
+A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist.
 
 ### ezobjects.createClass(objectConfig)
-A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
+A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured.  The resulting class is both returned from the function and exported from the `ezobjects-mysql` module.
 
-In addition, each EZ Object you create will be available from the module as well, for example:
-
-```javascript
-const myObject = new ezobjects.MyObject()
-```
+### ezobjects.instanceOf(obj, constructorName)
+A function that tests where a given class `obj` is an instance of `constructorName`, meaning `constructorName` is the name of the object's constructor, or the name of any constructor in the object's prototype chain.
 
 ## EZ Object Types
 
