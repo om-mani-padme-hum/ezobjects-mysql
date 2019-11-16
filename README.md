@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v9.0.3
+# EZ Objects - MySQL Edition - v10.0.0
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -7,18 +7,15 @@ to do is create simple class configurations for each of your objects and then cr
 createClass() function.
 
 * [Installation](#installation)
+* [Important Notes](#important-notes)
 * [Basic Example](#basic-example)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Module Exports](#module-exports)
 * [Configuration Specifications](#configuration-specifications)
+* [Storage Efficiency](#storage-efficiency)
 * [Contributing](#contributing)
 * [License](#license)
-
-### Version 9
-
-Finally fixed the loading of sub-objects by keeping internal track of all EZ Objects created, regardless of
-whether defined by type: or instanceOf:.  Now fully functional!
 
 ### Want EZ Objects Without The MySQL?
 
@@ -31,15 +28,19 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 
 ## Installation
 
-`npm install --save ezobjects-mysql`
+`npm i ezobjects-mysql`
+
+## Important Notes
+
+Each of your MySQL EZ Objects **must** include an `int` or `integer` property named `id` that will be automatically 
+configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
+The `load` method will generally be based off the `id` field, unless you specify a `otherSearchProperty` to load 
+by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
+module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
+a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
+fishy is going on.
 
 ## Basic Example
-
-**Important Notes:** Each of your EZ Object tables must include an `int` or `integer` property named 
-`id` that will be automatically configured to serve as an auto-incrementing primary index in the MySQL 
-table that you are linking your object to.  The `load` method will generally be based off the `id` field,
-unless you specify a `stringSearchField`.  Also note that you must also use [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
-for your database connections for compatability purposes and to allow async/await functionality.
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
@@ -264,9 +265,9 @@ meaning it's intended to be linked to a MySQL table:
  * **Description:** Load the record in database `db`, table `tableName`, that has its `id` field equal to provided `id` parameter.
 
 ### MyObject.load(fieldValue, db)
- * **Parameter:** fieldValue - `mixed` - The value of the `otherSearchField` property of the record you wish to load
+ * **Parameter:** fieldValue - `mixed` - The value of the `otherSearchProperty` property of the record you wish to load
  * **Parameter:** db - `Object`
- * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchField` field equal to provided `fieldValue` parameter.  Here, the actual field name of `otherSearchField` is provided in the object configuration, see the configuration section below.
+ * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchProperty` field equal to provided `fieldValue` parameter.  Here, the actual field name of `otherSearchProperty` is provided in the object configuration, see the configuration section below.
 
 ### MyObject.load(url[, db])
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
@@ -280,13 +281,19 @@ meaning it's intended to be linked to a MySQL table:
 
 ## Module Exports
 
-The EZ Objects module exports two functions and a MySQL class object:
+The EZ Objects module exports two functions:
 
 ### ezobjects.createTable(objectConfig, db)
 A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist
 
 ### ezobjects.createClass(objectConfig)
 A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
+
+In addition, each EZ Object you create will be available from the module as well, for example:
+
+```javascript
+const myObject = new ezobjects.MyObject()
+```
 
 ## Configuration Specifications
 
@@ -303,7 +310,7 @@ See the following for how to configure your EZ Objects:
 ### A table-linked MySQL object configuration can also have the following:
 
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
-* **otherSearchField** - `string` - (optional) The name of a unique property that you want to be able to load with as an alternative to `id`
+* **otherSearchProperty** - `string` - (optional) The name of a **unique** property that you want to be able to load with as an alternative to the mandatory `id` property.  Note the `id` property is still required.
 * **url** - `string` - (optional) The URL of a back-end that will provide a JSON.stringify output of the EZ Object for browserify'd loading of the object using an AJAX background request.  For now, the URL must take the ID # of the record at the very end, i.e. http://go.to/myObject/load/{ID#}
 
 ### A basic property configuration can have the following:
@@ -327,8 +334,9 @@ See the following for how to configure your EZ Objects:
 * **characterSet** - `string` - (optional) Indicates the property should use the provided charset in the MySQL table
 * **collate** - `string` - (optional) Indicates the property should use the provided collation in the MySQL table
 * **autoIncrement** - `boolean` - (optional) Indicates the property should be auto-incremented in the MySQL table
-* **saveTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to saving in the database.  The handler for this transform will also be passed the EZ Objects `propertyConfig`, if needed.
-* **loadTransform(x, propertyConfig, db)** - `function` - (optional) Function that transforms and returns the property value after loading from the database. .  The handler for this transform will also be passed the EZ Objects `propertyConfig`, if needed, along with the MySQL connection `db` **iff** it was provided as the third argument of the object's `load` method. 
+* **mysqlType** - `string` - (optional) Provide the name of a valid MySQL data type in order to override the default, this can be especially useful for saving database space when you know you will be well under the default MySQL type sizes.
+* **saveTransform(x, propertyConfig)** - `function` - (optional) Provide a function that transforms and returns the property value prior to saving in the database in order to override the default.  The handler for this transform will also be passed the EZ Objects `propertyConfig`, if needed.
+* **loadTransform(x, propertyConfig, db)** - `function` - (optional) Provide a function that transforms and returns the property value after loading from the database in order to override the default.  The handler for this transform will also be passed the EZ Objects `propertyConfig`, if needed, along with the MySQL connection `db` **iff** it was provided as the third argument of the object's `load` method. 
 
 ### A MySQL index configuration can have the following (for MySQL table association only):
 
@@ -340,53 +348,72 @@ See the following for how to configure your EZ Objects:
 * **visible** - `boolean` - (optional) Indicates the index should be visible
 * **invisible** - `boolean` - (optional) Indicates the index should be invisible
 
-### Default initializations for different JavaScript types
+### Corresponding JavaScript & Default MySQL Types & Values For Each EZ Object Type
 
-* `bit` - `Buffer.from([])`
-* `tinyint` - `0`
-* `smallint` - `0`
-* `mediumint` - `0`
-* `int` - `0`
-* `integer` - `0`
-* `bigint` - `0`
-* `real` - `0`
-* `double` - `0`
-* `float` - `0`
-* `decimal` - `0`
-* `numeric` - `0`
-* `date` - `new Date(0)`
-* `time` - `00:00:00`
-* `timestamp` - ``
-* `datetime` - `new Date(0)`
-* `year` - `0`
-* `char` - ``
-* `varchar` - ``
-* `binary` - `Buffer.from([])`
-* `varbinary` - `Buffer.from([])`
-* `tinyblob` - `Buffer.from([])`
-* `blob` - `Buffer.from([])`
-* `mediumblob` - `Buffer.from([])`
-* `longblob` - `Buffer.from([])`
-* `tinytext` - ``
-* `text` - ``
-* `mediumtext` - ``
-* `longtext` - ``
-* `enum` - ``
-* `set` - `new Set()`
-* `boolean` - `false`
-* `function` - `function () { }`
-* `object` - `{}`
-* All `array` types - `[]`
-* All other types - `null`
+| EZ Object Type | JavaScript Type | Default JavaScript Value | Default MySQL Type | Default MySQL Value |
+|      :---:     |     :---:       |          :---:           |         :---:      |         :---:       |
+| **bit** | `Buffer` | `Buffer.from([])` | BIT | 0 |
+| **tinyint** | `Number` | 0 | TINYINT | 0 |
+| **smallint** | `Number` | 0 | SMALLINT | 0 |
+| **mediumint** | `Number` | 0 | MEDIUMINT | 0 |
+| **int** | `Number` | 0 | INT | 0 |
+| **bigint** | `Number` | 0 | BIGINT | 0 |
+| **real** | `Number` | 0 | REAL | 0 |
+| **double** | `Number` | 0 | DOUBLE | 0 |
+| **float** | `Number` | 0 | FLOAT | 0 |
+| **decimal** | `Number` | 0 | DECIMAL | 0 |
+| **numeric** | `Number` | 0 | NUMERIC | 0 |
+| **time** | `String` | '00:00:00' | TIME | 00:00:00 |
+| **char** | `String` | '' | CHAR | '' |
+| **varchar** | `String` | '' | VARCHAR | '' |
+| **binary** | `Buffer` | `Buffer.from([])` | BINARY | '' |
+| **varbinary** | `Buffer` | `Buffer.from([])` | VARBINARY | '' |
+| **tinyblob** | `Buffer` | `Buffer.from([])` | TINYBLOB | '' |
+| **blob** | `Buffer` | `Buffer.from([])` | BLOB | '' |
+| **mediumblob** | `Buffer` | `Buffer.from([])` | MEDIUMBLOB | '' |
+| **longblob** | `Buffer` | `Buffer.from([])` | LONGBLOB | '' |
+| **tinytext** | `String` | '' | TINYTEXT | '' |
+| **text** | `String` | '' | TEXT | '' |
+| **mediumtext** | `String` | '' | MEDIUMTEXT | '' |
+| **longtext** | `String` | '' | LONGTEXT | '' |
+| **set** | `Set` | `new Set()` | SET | '' |
+| **boolean** | `Boolean` | `false` | TINYINT | 0 |
+| **function** | `function` | `function () { }` | TEXT | 'function () { }' |
+| **object** | `Object` | `{}` | TEXT | '{}' |
+| **MyEZObject** | MyEZObject | `null` | TINYTEXT | NULL |
+| **arrayOf(bit)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(tinyint)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(smallint)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(mediumint)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(int)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(bigint)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(real)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(double)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(float)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(decimal)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(numeric)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(time)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(char)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(varchar)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(binary)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(varbinary)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(tinyblob)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(blob)** | `Array` | `[]` | MEDIUMTEXT | '' |
+| **arrayOf(mediumblob)** | `Array` | `[]` | LONGTEXT | '' |
+| **arrayOf(longblob)** | `Array` | `[]` | LONGTEXT | '' |
+| **arrayOf(tinytext)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(text)** | `Array` | `[]` | MEDIUMTEXT | '' |
+| **arrayOf(mediumtext)** | `Array` | `[]` | LONGTEXT | '' |
+| **arrayOf(longtext)** | `Array` | `[]` | LONGTEXT | '' |
+| **arrayOf(set)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(boolean)** | `Array` | `[]` | TEXT | '' |
+| **arrayOf(function)** | `Array` | `[]` | MEDIUMTEXT | '' |
+| **arrayOf(object)** | `Array` | `[]` | MEDIUMTEXT | '' |
+| **arrayOf(MyEZObject)** | `Array` | `[]` | TEXT | '' |
 
 ### Default transforms
 
-* Documentation todo, though there are appropriate transforms for all types implemented.  For now, I recommend you don't override transforms unless you know what you are doing.
-* Most arrays are stored as `text`, `mediumtext`, or `blob`, `mediumblob`, etc
-* `other` - **saveTransform(value, property)** - The ID # of the object.
-* `other` - **loadTransform(value, property, db)** - Create appropriate class for property and load from database `db` using `value`, which can either be an ID # or `stringSearchField` value.
-* `Array[other]` - **saveTransform(value, property)** - Comma delimieted string of all object ID #'s.
-* `Array[other]` - **loadTransform(value, property, db)** - Split `value` into an array of ID #'s and map them to the appropriate class for the property `arrayOf` type or instanceOf and load each from database `db`.
+There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](https://github.com/om-mani-padme-hum/ezobjects-mysql/blob/master/index.js#L182)
 
 ## Contributing
 

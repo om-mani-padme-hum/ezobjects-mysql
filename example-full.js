@@ -29,7 +29,6 @@ const configExample = {
     { name: `smallintExample`, type: `smallint` },
     { name: `mediumintExample`, type: `mediumint` },
     { name: `intExample`, type: `int` },
-    { name: `integerExample`, type: `integer` },
     { name: `bigintExample`, type: `bigint` },
     { name: `doubleExample`, type: `double` },
     { name: `floatExample`, type: `float` },
@@ -39,7 +38,6 @@ const configExample = {
     { name: `timeExample`, type: `time` },
     { name: `timestampExample`, type: `timestamp` },
     { name: `datetimeExample`, type: `datetime` },
-    { name: `yearExample`, type: `year` },
     { name: `charExample`, type: `char`, length: 2 },
     { name: `charExample2`, type: `char`, length: 2, characterSet: `latin1`, collate: `latin1_german1_ci` },
     { name: `varcharExample`, type: `varchar`, length: 40 },
@@ -54,7 +52,6 @@ const configExample = {
     { name: `textExample`, type: `text` },
     { name: `mediumtextExample`, type: `mediumtext` },
     { name: `longtextExample`, type: `longtext` },
-    { name: `enumExample`, type: `enum`, values: [`one`, `two`, `three`] },
     { name: `setExample`, type: `set`, values: [`a`, `b`, `c`, `d`] },
     { name: `booleanExample`, type: `boolean` },
     { name: `functionExample`, type: `function` },
@@ -70,7 +67,6 @@ const configExample = {
     { name: `smallintArrayExample`, type: `Array`, arrayOf: { type: `smallint` } },
     { name: `mediumintArrayExample`, type: `Array`, arrayOf: { type: `mediumint` } },
     { name: `intArrayExample`, type: `Array`, arrayOf: { type: `int` } },
-    { name: `integerArrayExample`, type: `Array`, arrayOf: { type: `integer` } },
     { name: `bigintArrayExample`, type: `Array`, arrayOf: { type: `bigint` } },
     { name: `doubleArrayExample`, type: `Array`, arrayOf: { type: `double` } },
     { name: `floatArrayExample`, type: `Array`, arrayOf: { type: `float` } },
@@ -80,7 +76,6 @@ const configExample = {
     { name: `timeArrayExample`, type: `Array`, arrayOf: { type: `time` } },
     { name: `timestampArrayExample`, type: `Array`, arrayOf: { type: `timestamp` } },
     { name: `datetimeArrayExample`, type: `Array`, arrayOf: { type: `datetime` } },
-    { name: `yearArrayExample`, type: `Array`, arrayOf: { type: `year` } },
     { name: `charArrayExample`, type: `Array`, arrayOf: { type: `char`, length: 2 } },
     { name: `charArrayExample2`, type: `Array`, arrayOf: { type: `char`, length: 2, characterSet: `latin1`, collate: `latin1_german1_ci` } },
     { name: `varcharArrayExample`, type: `Array`, arrayOf: { type: `varchar`, length: 40 } },
@@ -95,7 +90,6 @@ const configExample = {
     { name: `textArrayExample`, type: `Array`, arrayOf: { type: `text` } },
     { name: `mediumtextArrayExample`, type: `Array`, arrayOf: { type: `mediumtext` } },
     { name: `longtextArrayExample`, type: `Array`, arrayOf: { type: `longtext` } },
-    { name: `enumArrayExample`, type: `Array`, arrayOf: { type: `enum`, values: [`one`, `two`, `three`] } },
     { name: `setArrayExample`, type: `Array`, arrayOf: { type: `set`, values: [`a`, `b`, `c`, `d`] } },
     { name: `booleanArrayExample`, type: `Array`, arrayOf: { type: `boolean` } },
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
@@ -176,7 +170,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       smallintExample: -32767,
       mediumintExample: -8388608,
       intExample: -2147483648,
-      integerExample: -2147483648,
     //  bigintExample: -9223372036854775808,
       doubleExample: 193448295822329038402340234.23840923804823094809234245,
       floatExample: 1927492498374.2348927395,
@@ -186,7 +179,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       timeExample: `-838:59:59`,
       timestampExample: new Date(`2011-07-16T04:52:23-06:00`),
       datetimeExample: new Date(`2011-07-16T04:52:23-06:00`),
-      yearExample: 2004,
       charExample: `AU`,
       charExample2: `ÄÜ`,
       varcharExample: `Varchar Example`,
@@ -201,7 +193,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       textExample: `I am a bigger text up to 65 kB`,
       mediumtextExample: `I am a bigger text up to 16 MB`,
       longtextExample: `I am a bigger text up to 4 GB`,
-      enumExample: `two`,
       setExample: new Set([`a`, `d`, `d`]),
       booleanExample: true,
       functionExample: (arg) => { return `I am ${arg}`; },
@@ -217,7 +208,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       smallintArrayExample: [-32767, 32767],
       mediumintArrayExample: [-8388608, 8388608],
       intArrayExample: [-2147483648, 2147483648],
-      integerArrayExample: [-2147483648, 2147483648],
       bigintArrayExample: [-9223372036854775808, 9223372036854775808],
       doubleArrayExample: [-193448295822329038402340234.23840923804823094809234245, 193448295822329038402340234.23840923804823094809234245],
       floatArrayExample: [-1927492498374.2348927395, 1927492498374.2348927395],
@@ -227,7 +217,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       timeArrayExample: [`-838:59:59`, `838:59:59`],
       timestampArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
       datetimeArrayExample: [new Date(`2011-07-16T04:52:23-06:00`), new Date(`2013-04-26T17:04:13-06:00`)],
-      yearArrayExample: [2004, 1968],
       charArrayExample: [`AU`, `CD`],
       charArrayExample2: [`ÄÜ`, `CD`],
       varcharArrayExample: [`Varchar Example`, `Another Varchar Example`],
@@ -242,7 +231,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       textArrayExample: [`I am a bigger text up to 65 kB`, `I am another bigger text up to 65 kB`],
       mediumtextArrayExample: [`I am a bigger text up to 16 MB`, `I am another bigger text up to 16 MB`],
       longtextArrayExample: [`I am a bigger text up to 4 GB`, `I am another bigger text up to 4 GB`],
-      enumArrayExample: [`two`, `one`],
       setArrayExample: [new Set([`a`, `d`]), new Set([`a`, `c`, `d`, `d`])],
       booleanArrayExample: [false, true],
       functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
@@ -277,6 +265,57 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
     /** Log the database loaded example object */
     console.log(`Database loaded example object:`);
     console.log(util.inspect(example2, { depth: null }));
+    
+    /** To demonstrate the ability to override the MySQL type, create config for example override */
+    const exampleOverrideConfig = {
+      tableName: `example_overrides`,
+      className: `ExampleOverride`,
+      properties: [
+        { name: `id`, type: `int` },
+        { 
+          name: `examples`, 
+          type: `array`, 
+          mysqlType: `tinytext`, 
+          arrayOf: { type: `Example` }, 
+          saveTransform: x => x.map(y => y.id()).join(`,`), 
+          loadTransform: async (x, property, db) => { 
+            const arr = []; 
+            
+            for ( let i = 0, list = x === `` ? [] : x.split(`,`), i_max = list.length; i < i_max; i++ )
+              arr.push(await (new Example()).load(parseInt(list[i]), db)); /** You can also use ezobjects.Example from anywhere */
+          
+            return arr; 
+          }
+        }
+      ]
+    };
+    
+    /** Create example override class */
+    const ExampleOverride = ezobjects.createClass(exampleOverrideConfig);
+    
+    /** Create example overrides table if it doesn`t already exist */
+    await ezobjects.createTable(exampleOverrideConfig, db);
+    
+    /** Create new example override */
+    const exampleOverride = new ExampleOverride();
+    
+    /** Let's just push on the two previous example objects we created, which are both the same record */
+    exampleOverride.examples().push(example);
+    exampleOverride.examples().push(example2);
+    
+    /** Insert our example override into the database */
+    await exampleOverride.insert(db);
+    
+    console.log(exampleOverride);
+    
+    /** Create another example override */
+    const exampleOverride2 = new ExampleOverride();
+    
+    /** Load it using the ID of the previous override */
+    await exampleOverride2.load(exampleOverride.id(), db);
+    
+    /** As you can see, the two log outputs are the same, demonstrating the success of the MySQL override and change of transforms */
+    console.log(exampleOverride2);
   } catch ( err ) {
     /** Cleanly log any errors */
     console.log(err.message);
