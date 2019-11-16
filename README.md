@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.2
+# EZ Objects - MySQL Edition - v10.0.3
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -7,12 +7,12 @@ to do is create simple class configurations for each of your objects and then cr
 [ezobjects.createClass()](#ezobjectscreateclassobjectconfig) function.
 
 * [Installation](#installation)
+* [Required Property](#required-property)
 * [Basic Example](#basic-example)
+* [Module Exports](#module-exports)
 * [EZ Object Types](#ez-object-types)
-* [Important - Required Property](#one-property-is-required)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
-* [Module Exports](#module-exports)
 * [Configuration Specifications](#configuration-specifications)
 * [Wasted Space](#wasted-space)
 * [See Also](#see-also)
@@ -32,15 +32,25 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 
 `npm i ezobjects-mysql`
 
+## Required Property
+
+**IMPORTANT:** Each of your MySQL EZ Objects **must** include a property of EZ Object type `int` named `id` that will be automatically 
+configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
+The `load` method will generally be based off the `id` field, unless you specify a [otherSearchProperty](#a-table-linked-mysql-object-configuration-can-also-have-the-following) to load 
+by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
+module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
+a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
+fishy is going on.
+
 ## Basic Example
 
 It might be best to start off with a basic example where I do the following:
 
 1) Configure an EZ Object called `DatabaseRecord`
 2) Configure another EZ Object called `UserAccount` that extends from `DatabaseRecord`
-3) Create the classes for both using the `createClass` EZ Objects export
-4) Create my *user_accounts* MySQL table using the `createTable` export (if it doesn't already exist)
-5) Demonstrate the getters, setters, and delete/insert/load/update class methods that EZ Objects automatically provides.
+3) Create the classes for both using the [ezobjects.createClass()](#ezobjectscreateclassobjectconfig) EZ Objects export
+4) Create my *user_accounts* MySQL table using the [ezobjects.createTable()](#ezobjectscreatetableobjectconfig-db) export (if it doesn't already exist)
+5) Demonstrate the [getters](#myobjectmyproperty), [setters](#myobjectmypropertyvalue), and [insert](#myobjectinsertdb)/[update](#myobjectupdatedb)/[load](#myobjectloadfieldvalue-db)/[delete](#myobjectdeletedb) class methods that EZ Objects automatically provides.
 
 ```javascript
 const ezobjects = require(`ezobjects-mysql`);
@@ -208,6 +218,22 @@ UserAccount {
   _favoriteDay: 2019-09-01T05:00:00.000Z }
 ```
 
+## Module Exports
+
+The EZ Objects module exports two functions:
+
+### ezobjects.createTable(objectConfig, db)
+A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist
+
+### ezobjects.createClass(objectConfig)
+A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
+
+In addition, each EZ Object you create will be available from the module as well, for example:
+
+```javascript
+const myObject = new ezobjects.MyObject()
+```
+
 ## EZ Object Types
 
 See the table below for a list of EZ Object types along with their JavaScript type and default value, as well 
@@ -273,16 +299,6 @@ as the default MySQL type.
 | **Array\[function]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[object]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[MyEZObject]** | `Array` | `[]` | TEXT |
-
-## One Property Is Required
-
-Each of your MySQL EZ Objects **must** include an `int` property named `id` that will be automatically 
-configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
-The `load` method will generally be based off the `id` field, unless you specify a `otherSearchProperty` to load 
-by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
-module for your database connection for compatability purposes and to allow async/await functionality.  It is simply
-a wrapper for the popular [mysql](https://github.com/mysqljs/mysql) module and takes no time to scan and see that nothing 
-fishy is going on.
 
 ## Basic EZ Object Method Signatures
 
@@ -354,22 +370,6 @@ meaning it's intended to be linked to a MySQL table:
 ### MyObject.update(db)
  * **Parameter:** db - `Object`
  * **Description:** Update the record in database `db`, table `tableName`, with its `id` field equal to the `id` property of this object, using this object's property values.
-
-## Module Exports
-
-The EZ Objects module exports two functions:
-
-### ezobjects.createTable(objectConfig, db)
-A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist
-
-### ezobjects.createClass(objectConfig)
-A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured
-
-In addition, each EZ Object you create will be available from the module as well, for example:
-
-```javascript
-const myObject = new ezobjects.MyObject()
-```
 
 ## Configuration Specifications
 
