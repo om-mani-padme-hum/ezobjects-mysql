@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.0
+# EZ Objects - MySQL Edition - v10.0.1
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -9,11 +9,12 @@ createClass() function.
 * [Installation](#installation)
 * [Important Notes](#important-notes)
 * [Basic Example](#basic-example)
+* [EZ Object Types](#ez-object-types)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Module Exports](#module-exports)
 * [Configuration Specifications](#configuration-specifications)
-* [Storage Efficiency](#storage-efficiency)
+* [Wasted Space](#wasted-space)
 * [Contributing](#contributing)
 * [License](#license)
 
@@ -32,7 +33,7 @@ you can find the original `ezobjects` package on [npm](https://www.npmjs.com/pac
 
 ## Important Notes
 
-Each of your MySQL EZ Objects **must** include an `int` or `integer` property named `id` that will be automatically 
+Each of your MySQL EZ Objects **must** include an `int` property named `id` that will be automatically 
 configured to serve as an auto-incrementing primary index in the MySQL table that you are linking your object to.  
 The `load` method will generally be based off the `id` field, unless you specify a `otherSearchProperty` to load 
 by as an alternative.  Also note that you **must** also use the [mysql-await](https://github.com/om-mani-padme-hum/mysql-await) 
@@ -208,6 +209,72 @@ UserAccount {
   _favoriteDay: 2019-09-01T05:00:00.000Z }
 ```
 
+## EZ Object Types
+
+See the table below for a list of EZ Object types along with their JavaScript type and default value, as well 
+as the default MySQL type.
+
+| EZ Object Type | JavaScript Type | Default JavaScript Value | Default MySQL Type | 
+|      :---     |     :---:       |          :---:           |         :---:      |  
+| **bit** | `Buffer` | `Buffer.from([])` | BIT |
+| **tinyint** | `Number` | 0 | TINYINT |
+| **smallint** | `Number` | 0 | SMALLINT |
+| **mediumint** | `Number` | 0 | MEDIUMINT |
+| **int** | `Number` | 0 | INT |
+| **bigint** | `Number` | 0 | BIGINT |
+| **real** | `Number` | 0 | REAL |
+| **double** | `Number` | 0 | DOUBLE |
+| **float** | `Number` | 0 | FLOAT |
+| **decimal** | `Number` | 0 | DECIMAL |
+| **numeric** | `Number` | 0 | NUMERIC |
+| **time** | `String` | '00:00:00' | TIME |
+| **char** | `String` | '' | CHAR |
+| **varchar** | `String` | '' | VARCHAR |
+| **binary** | `Buffer` | `Buffer.from([])` | BINARY |
+| **varbinary** | `Buffer` | `Buffer.from([])` | VARBINARY |
+| **tinyblob** | `Buffer` | `Buffer.from([])` | TINYBLOB |
+| **blob** | `Buffer` | `Buffer.from([])` | BLOB |
+| **mediumblob** | `Buffer` | `Buffer.from([])` | MEDIUMBLOB |
+| **longblob** | `Buffer` | `Buffer.from([])` | LONGBLOB |
+| **tinytext** | `String` | '' | TINYTEXT |
+| **text** | `String` | '' | TEXT |
+| **mediumtext** | `String` | '' | MEDIUMTEXT |
+| **longtext** | `String` | '' | LONGTEXT |
+| **set** | `Set` | `new Set()` | SET |
+| **boolean** | `Boolean` | `false` | TINYINT |
+| **function** | `function` | `function () { }` | TEXT |
+| **object** | `Object` | `{}` | TEXT |
+| **MyEZObject** | MyEZObject | `null` | TINYTEXT |
+| **Array\[bit]** | `Array` | `[]` | TEXT |
+| **Array\[tinyint]** | `Array` | `[]` | TEXT |
+| **Array\[smallint]** | `Array` | `[]` | TEXT |
+| **Array\[mediumint]** | `Array` | `[]` | TEXT |
+| **Array\[int]** | `Array` | `[]` | TEXT |
+| **Array\[bigint]** | `Array` | `[]` | TEXT |
+| **Array\[real]** | `Array` | `[]` | TEXT |
+| **Array\[double]** | `Array` | `[]` | TEXT |
+| **Array\[float]** | `Array` | `[]` | TEXT |
+| **Array\[decimal]** | `Array` | `[]` | TEXT |
+| **Array\[numeric]** | `Array` | `[]` | TEXT |
+| **Array\[time]** | `Array` | `[]` | TEXT |
+| **Array\[char]** | `Array` | `[]` | TEXT |
+| **Array\[varchar]** | `Array` | `[]` | TEXT |
+| **Array\[binary]** | `Array` | `[]` | TEXT |
+| **Array\[varbinary]** | `Array` | `[]` | TEXT |
+| **Array\[tinyblob]** | `Array` | `[]` | TEXT |
+| **Array\[blob]** | `Array` | `[]` | MEDIUMTEXT |
+| **Array\[mediumblob]** | `Array` | `[]` | LONGTEXT |
+| **Array\[longblob]** | `Array` | `[]` | LONGTEXT |
+| **Array\[tinytext]** | `Array` | `[]` | TEXT |
+| **Array\[text]** | `Array` | `[]` | MEDIUMTEXT |
+| **Array\[mediumtext]** | `Array` | `[]` | LONGTEXT |
+| **Array\[longtext]** | `Array` | `[]` | LONGTEXT |
+| **Array\[set]** | `Array` | `[]` | TEXT |
+| **Array\[boolean]** | `Array` | `[]` | TEXT |
+| **Array\[function]** | `Array` | `[]` | MEDIUMTEXT |
+| **Array\[object]** | `Array` | `[]` | MEDIUMTEXT |
+| **Array\[MyEZObject]** | `Array` | `[]` | TEXT |
+
 ## Basic EZ Object Method Signatures
 
 These are the object method signatures even the most basic of EZ Objects will have:
@@ -316,11 +383,11 @@ See the following for how to configure your EZ Objects:
 ### A basic property configuration can have the following:
 
 * **name** - `string` - (required) Name of the property, must conform to both JavaScript and MySQL rules
-* **type** - `string` - (optional) EZ Object type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `object`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
+* **type** - `string` - (optional) EZ Object type that the property must be equal to -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `set`, `boolean`, `function`, `object`, any other valid object constructor name, or `array` where `arrayOf` is provided with information about the array element types. \[either **type** or **instanceOf** is required]
 * **instanceOf** - `string` - (optional) JavaScript class constructor name that the property must be an instance of \[either **type** or **instanceOf** is required]
 * **default** - `mixed` - (optional) Sets the default value for the property in the class object
-* **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only plain objects and custom object types are nullable
-* **arrayOf** - `object` - (required for type `array`) A plain object containing the EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `integer`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `year`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `enum`, `set`, `boolean`, `function`, `object`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  Should also include any other relevant MySQL attributes for the stored properties, such as allowNull, length, unsigned, etc, though not all specifics will be used as the current practice is to store arrays using the family of MySQL `text`-type and `blob`-type fields.  That may change in future versions though where they may be stored in transparent sub-tables, so it's best practice to include the MySQL specifics if you desire future compatability.  **Important Note:** Arrays also therefore don't yet have unlimited size capability, and if the MySQL type used by default isn't big enough, it will be up to you to manually override the `mysqlType` of the `array` property configuration.  \[either **type** or **instanceOf** is required]
+* **allowNull** - `boolean` - (optional) Indicates the property can be null, default is that only `date`, `datetime`, `timestamp`, and custom object types are nullable
+* **arrayOf** - `object` - (required for type `array`) A plain object containing the EZ Object `type` or `instanceOf` of the elements of the array -- types can be `bit`, `tinyint`, `smallint`, `mediumint`, `int`, `bigint`, `real`, `double`, `float`, `decimal`, `numeric`, `date`, `time`, `timestamp`, `datetime`, `char`, `varchar`, `binary`, `varbinary`, `tinyblob`, `blob`, `mediumblob`, `longblob`, `tinytext`, `text`, `mediumtext`, `longtext`, `set`, `boolean`, `function`, `object`, or any other valid object constructor name (which can alternatively be used with `instanceOf` instead).  Should also include any other relevant MySQL attributes for the stored properties, such as allowNull, length, unsigned, etc, though not all specifics will be used as the current practice is to store arrays using the family of MySQL `text`-type and `blob`-type fields.  That may change in future versions though where they may be stored in transparent sub-tables, so it's best practice to include the MySQL specifics if you desire future compatability.  **Important Note:** Arrays also therefore don't yet have unlimited size capability, and if the MySQL type used by default isn't big enough, it will be up to you to manually override the `mysqlType` of the `array` property configuration.  \[either **type** or **instanceOf** is required]
 * **setTransform(x, propertyConfig)** - `function` - (optional) Function that transforms and returns the property value prior to setting.  The handler for this transform will also be passed the EZ Objects `propertyConfig`, if needed.
 
 ### A MySQL property configuration can also have the following:
@@ -348,72 +415,27 @@ See the following for how to configure your EZ Objects:
 * **visible** - `boolean` - (optional) Indicates the index should be visible
 * **invisible** - `boolean` - (optional) Indicates the index should be invisible
 
-### Corresponding JavaScript & Default MySQL Types & Values For Each EZ Object Type
-
-| EZ Object Type | JavaScript Type | Default JavaScript Value | Default MySQL Type | Default MySQL Value |
-|      :---:     |     :---:       |          :---:           |         :---:      |         :---:       |
-| **bit** | `Buffer` | `Buffer.from([])` | BIT | 0 |
-| **tinyint** | `Number` | 0 | TINYINT | 0 |
-| **smallint** | `Number` | 0 | SMALLINT | 0 |
-| **mediumint** | `Number` | 0 | MEDIUMINT | 0 |
-| **int** | `Number` | 0 | INT | 0 |
-| **bigint** | `Number` | 0 | BIGINT | 0 |
-| **real** | `Number` | 0 | REAL | 0 |
-| **double** | `Number` | 0 | DOUBLE | 0 |
-| **float** | `Number` | 0 | FLOAT | 0 |
-| **decimal** | `Number` | 0 | DECIMAL | 0 |
-| **numeric** | `Number` | 0 | NUMERIC | 0 |
-| **time** | `String` | '00:00:00' | TIME | 00:00:00 |
-| **char** | `String` | '' | CHAR | '' |
-| **varchar** | `String` | '' | VARCHAR | '' |
-| **binary** | `Buffer` | `Buffer.from([])` | BINARY | '' |
-| **varbinary** | `Buffer` | `Buffer.from([])` | VARBINARY | '' |
-| **tinyblob** | `Buffer` | `Buffer.from([])` | TINYBLOB | '' |
-| **blob** | `Buffer` | `Buffer.from([])` | BLOB | '' |
-| **mediumblob** | `Buffer` | `Buffer.from([])` | MEDIUMBLOB | '' |
-| **longblob** | `Buffer` | `Buffer.from([])` | LONGBLOB | '' |
-| **tinytext** | `String` | '' | TINYTEXT | '' |
-| **text** | `String` | '' | TEXT | '' |
-| **mediumtext** | `String` | '' | MEDIUMTEXT | '' |
-| **longtext** | `String` | '' | LONGTEXT | '' |
-| **set** | `Set` | `new Set()` | SET | '' |
-| **boolean** | `Boolean` | `false` | TINYINT | 0 |
-| **function** | `function` | `function () { }` | TEXT | 'function () { }' |
-| **object** | `Object` | `{}` | TEXT | '{}' |
-| **MyEZObject** | MyEZObject | `null` | TINYTEXT | NULL |
-| **arrayOf(bit)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(tinyint)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(smallint)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(mediumint)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(int)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(bigint)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(real)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(double)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(float)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(decimal)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(numeric)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(time)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(char)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(varchar)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(binary)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(varbinary)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(tinyblob)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(blob)** | `Array` | `[]` | MEDIUMTEXT | '' |
-| **arrayOf(mediumblob)** | `Array` | `[]` | LONGTEXT | '' |
-| **arrayOf(longblob)** | `Array` | `[]` | LONGTEXT | '' |
-| **arrayOf(tinytext)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(text)** | `Array` | `[]` | MEDIUMTEXT | '' |
-| **arrayOf(mediumtext)** | `Array` | `[]` | LONGTEXT | '' |
-| **arrayOf(longtext)** | `Array` | `[]` | LONGTEXT | '' |
-| **arrayOf(set)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(boolean)** | `Array` | `[]` | TEXT | '' |
-| **arrayOf(function)** | `Array` | `[]` | MEDIUMTEXT | '' |
-| **arrayOf(object)** | `Array` | `[]` | MEDIUMTEXT | '' |
-| **arrayOf(MyEZObject)** | `Array` | `[]` | TEXT | '' |
-
 ### Default transforms
 
 There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](https://github.com/om-mani-padme-hum/ezobjects-mysql/blob/master/index.js#L182)
+
+## Wasted Space
+
+It should be noted that it's possible for there to be considerable space wasted through too liberal use of 
+large data types or arrays of large data types.  In many cases this is not an issue, space is cheap right?  However, 
+in database tables with massive amounts of records, you may want to do a little due diligence and see 
+if you need to override some of the default MySQL types.
+
+For example, let's say that you have the following property config:
+
+`{ name: 'permissions', type: 'array', arrayOf: { type: 'int' } }`
+
+Well, each record will store that field as MySQL type TEXT which takes 65538 bytes of space per entry.  If there are only, say,
+25 permissions in your system numbered 1-25 or 0-24, then someone having all 25 permissions, stored using comma separated values
+in the database by EZ Objects, would not exceed the 255 bytes provided by a TINYTEXT field.  You may therefore wish to override the
+default MySQL type in this case if you have thousands of users in your database, like so:
+
+`{ name: 'permissions', type: 'array', mysqlType: 'tinytext', arrayOf: { type: 'int' } }`
 
 ## Contributing
 
