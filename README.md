@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.6
+# EZ Objects - MySQL Edition - v10.0.7
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -779,9 +779,8 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
 
 ## See Also
 
-There are a couple other examples available that use a broader range of the abilities of EZ Objects MySQL:
+There is another example available that demonstrates the browserify'd capabilities of EZ Objects by loading client-side over an Ajax back-end:
 
-* [Example Full](example-full.js) - An example where all data types are demonstrated to be operationald, including loading of custom child objects, along with an example where the `mysqlType`, `saveTransform`, and `loadTransform` of a property configuration are overridden.
 * [Example Nested Server](example-nested.js) - An example where client-side loading of EZ Objects is demonstrated by way of a browserify'd EZ Object model configurations, including loading of custom child objects.
 * [Example Nested Models](example-nested-models.js)
 * [Example Nested Client](example-nested.html)
