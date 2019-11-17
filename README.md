@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.9
+# EZ Objects - MySQL Edition - v10.0.10
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -14,6 +14,7 @@ to do is create simple class configurations for each of your objects and then cr
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Configuration Specifications](#configuration-specifications)
+* [Defining Additional Class Methods](#defining-additional-class-methods)
 * [Wasted Space](#wasted-space)
 * [Advanced Example With Each EZ Object Type](#advanced-example-with-each-ez-object-type)
 * [See Also](#see-also)
@@ -432,6 +433,33 @@ See the following for how to configure your EZ Objects:
 ### Default transforms
 
 There are appropriate setTransform, saveTransform, and loadTransform methods for each EZ Object type.  It is generally recommended that you don't override transforms unless you know what you are doing.  For those who insist on doing so, first reference the default transforms in use in the `ezobjectTypes` array [here](index.js#L182)
+
+## Defining Additional Class Methods
+
+Defining additional class methods is really just a matter of adding the functions to the class prototype.
+
+```javascript
+const ezobjects = require(`ezobjects-mysql`);
+
+/** Configure material */
+const materialConfig = {
+  className: `Material`,
+  tableName: `materials`,
+  properties: [
+    { name: `name`, type: `varchar`, length: 32 },
+    { name: `density`, type: `double` },
+    { name: `volume`, type: `double` },
+  ]
+};
+
+/** Create material class */
+const Material = ezobjects.createClass(materialConfig);
+
+/** Simply add weight function to the class prototype after creating it with createClass() */
+Material.prototype.weight = function () {
+  return this.density() * this.volume();
+}
+```
 
 ## Wasted Space
 
