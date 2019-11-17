@@ -1,6 +1,6 @@
-# EZ Objects - MySQL Edition - v10.1.2
+# EZ Objects - MySQL Edition - v10.1.3
 
-EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
+EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify'd](https://github.com/browserify/browserify)) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
 MySQL database tables by way of a mix of automatically generated [insert](#myobjectinsertdb)/[update](#myobjectupdatedb)/[load](#myobjectloadfieldvalue-db)/[delete](#myobjectdeletedb) class method signatures.  All you have 
 to do is create simple class configurations for each of your objects and then create them using the exported 
@@ -450,7 +450,7 @@ const materialConfig = {
   properties: [
     { name: `name`, type: `varchar`, length: 32 },
     { name: `density`, type: `double` },
-    { name: `volume`, type: `double` },
+    { name: `volume`, type: `double` }
   ]
 };
 
@@ -814,7 +814,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
 
 ## See Also
 
-There is another example available that demonstrates the browserify'd capabilities of EZ Objects by loading client-side over an Ajax back-end:
+There is another example available that demonstrates the [browserify'd](https://github.com/browserify/browserify) capabilities of EZ Objects by loading client-side over an Ajax back-end:
 
 * [Example Nested Server](example-nested.js)
 * [Example Nested Models](example-nested-models.js)
