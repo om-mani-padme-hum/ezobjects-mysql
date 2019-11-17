@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.1.8
+# EZ Objects - MySQL Edition - v10.1.9
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify)'d) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -364,10 +364,10 @@ meaning it's intended to be linked to a MySQL table:
  * **Parameter:** db - `Object`
  * **Description:** Load the record in database `db`, table `tableName`, that has its `id` field equal to provided `id` parameter.
 
-### MyObject.load(fieldValue, db)
- * **Parameter:** fieldValue - `mixed` - The value of the `otherSearchProperty` property of the record you wish to load
+### MyObject.load(propertyValue, db)
+ * **Parameter:** propertyValue - `mixed` - The value of the `otherSearchProperty` property of the record you wish to load
  * **Parameter:** db - `Object`
- * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchProperty` field equal to provided `fieldValue` parameter.  Here, the actual field name of `otherSearchProperty` is provided in the object configuration, see the configuration section below.
+ * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchProperty` field equal to provided `propertyValue` parameter.  Here, the actual field name of `otherSearchProperty` is provided in the object configuration, see the configuration section below.
 
 ### MyObject.load(url[, db])
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
@@ -494,12 +494,10 @@ default MySQL type in this case if you have thousands of users in your database,
 
 ```javascript
 /** Require external modules */
+const ezobjects = require(`ezobjects-mysql`);
 const fs = require(`fs`);
 const util = require(`util`);
 const mysql = require(`mysql-await`);
-
-/** Require internal modules */
-const ezobjects = require(`./index`);
 
 /** Connect to the MySQL database using login info stored externally */
 const db = mysql.createConnection(JSON.parse(fs.readFileSync(`mysql-config.json`)));
@@ -550,7 +548,6 @@ const configExample = {
     { name: `setExample`, type: `set`, values: [`a`, `b`, `c`, `d`] },
     { name: `booleanExample`, type: `boolean` },
     { name: `functionExample`, type: `function` },
-    { name: `functionExample2`, type: `function`, store: true },
     { name: `plainObjectExample`, type: `object` },
     { name: `ezobjectTypeExample`, type: `OtherObj` },
     { name: `ezobjectInstanceExample`, instanceOf: `OtherObj` },
@@ -588,7 +585,6 @@ const configExample = {
     { name: `setArrayExample`, type: `Array`, arrayOf: { type: `set`, values: [`a`, `b`, `c`, `d`] } },
     { name: `booleanArrayExample`, type: `Array`, arrayOf: { type: `boolean` } },
     { name: `functionArrayExample`, type: `Array`, arrayOf: { type: `function` } },
-    { name: `functionArrayExample2`, type: `Array`, arrayOf: { type: `function`, store: true } },
     { name: `plainObjectArrayExample`, type: `Array`, arrayOf: { type: `object` } },
     { name: `ezobjectTypeArrayExample`, type: `Array`, arrayOf: { type: `OtherObj` } },
     { name: `ezobjectInstanceArrayExample`, type: `Array`, arrayOf: { instanceOf: `OtherObj` } },
@@ -665,7 +661,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       smallintExample: -32767,
       mediumintExample: -8388608,
       intExample: -2147483648,
-      // bigintExample: -9223372036854775808, Gives ER_WARN_DATA_OUT_OF_RANGE error due to Node.js bug?
+      // bigintExample: -9223372036854775808, Gives ER_WARN_DATA_OUT_OF_RANGE error due to bug?
       doubleExample: 193448295822329038402340234.23840923804823094809234245,
       floatExample: 1927492498374.2348927395,
       decimalExample: 23.452,
@@ -691,7 +687,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       setExample: new Set([`a`, `d`, `d`]),
       booleanExample: true,
       functionExample: (arg) => { return `I am ${arg}`; },
-      functionExample2: (arg) => { return `I am ${arg} stored`; },
       plainObjectExample: { a: `I am A`, 14: `Plain Object` },
       ezobjectTypeExample: otherObj1,
       ezobjectInstanceExample: extendedObj1,
@@ -729,7 +724,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       setArrayExample: [new Set([`a`, `d`]), new Set([`a`, `c`, `d`, `d`])],
       booleanArrayExample: [false, true],
       functionArrayExample: [(arg) => { return `I am ${arg} 1`; }, (arg) => { return `I am ${arg} 2`; }],
-      functionArrayExample2: [(arg) => { return `I am ${arg} stored 1`; }, (arg) => { return `I am ${arg} stored 2`; }],
       plainObjectArrayExample: [{ a: `I am A`, 14: `Plain Object` }, { and: `So am I too a`, 930: `Plain Object` }],
       ezobjectTypeArrayExample: [otherObj1, otherObj2],
       ezobjectInstanceArrayExample: [extendedObj1, extendedObj2],
