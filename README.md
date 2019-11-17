@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.10
+# EZ Objects - MySQL Edition - v10.0.11
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -458,7 +458,7 @@ const Material = ezobjects.createClass(materialConfig);
 /** Simply add weight function to the class prototype after creating it with createClass() */
 Material.prototype.weight = function () {
   return this.density() * this.volume();
-}
+};
 ```
 
 ## Wasted Space
