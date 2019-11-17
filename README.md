@@ -1,6 +1,6 @@
-# EZ Objects - MySQL Edition - v10.1.3
+# EZ Objects - MySQL Edition - v10.1.4
 
-EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify'd](https://github.com/browserify/browserify)) that aims to save 
+EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify))'d that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
 MySQL database tables by way of a mix of automatically generated [insert](#myobjectinsertdb)/[update](#myobjectupdatedb)/[load](#myobjectloadfieldvalue-db)/[delete](#myobjectdeletedb) class method signatures.  All you have 
 to do is create simple class configurations for each of your objects and then create them using the exported 
@@ -373,7 +373,7 @@ meaning it's intended to be linked to a MySQL table:
  * **Parameter:** url - `string` - The URL of a back-end that provides JSON data compatible with this object's initializer
  * **Parameter:** db - `Object`
  * **Description:** Load any configured properties from the JSON-encoded key/value pairs obtained from `url`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
- * **Note:** This signature is useful only when your classes are standalone browserify'd and requires you to implement a backend at `url` that will output the JSON.  (This signature no longer requires jQuery to use)
+ * **Note:** This signature is useful only when your classes are standalone [browserify](https://github.com/browserify/browserify)'d and requires you to implement a backend at `url` that will output the JSON.  (This signature no longer requires jQuery to use)
 
 ### MyObject.update(db)
  * **Parameter:** db - `Object`
@@ -395,7 +395,7 @@ See the following for how to configure your EZ Objects:
 
 * **tableName** - `string` - (optional) Provide if object should be linked with MySQL database table
 * **otherSearchProperty** - `string` - (optional) The name of a **unique** property that you want to be able to load with as an alternative to the mandatory `id` property.  Note the `id` property is still required.
-* **url** - `string` - (optional) The URL of a back-end that will provide a JSON.stringify output of the EZ Object for browserify'd loading of the object using an AJAX background request.  For now, the URL must take the ID # of the record at the very end, i.e. http://go.to/myObject/load/{ID#}
+* **url** - `string` - (optional) The URL of a back-end that will provide a JSON.stringify output of the EZ Object for [browserify](https://github.com/browserify/browserify)'d loading of the object using an AJAX background request.  For now, the URL must take the ID # of the record at the very end, i.e. http://go.to/myObject/load/{ID#}
 
 ### A basic property configuration can have the following:
 
@@ -814,7 +814,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
 
 ## See Also
 
-There is another example available that demonstrates the [browserify'd](https://github.com/browserify/browserify) capabilities of EZ Objects by loading client-side over an Ajax back-end:
+There is another example available that demonstrates the [browserify](https://github.com/browserify/browserify)'d capabilities of EZ Objects by loading client-side over an Ajax back-end:
 
 * [Example Nested Server](example-nested.js)
 * [Example Nested Models](example-nested-models.js)
