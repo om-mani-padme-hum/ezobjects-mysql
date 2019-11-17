@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.11
+# EZ Objects - MySQL Edition - v10.0.12
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -299,11 +299,13 @@ The EZ Objects module exports three functions:
 
 ### ezobjects.createClass(objectConfig)
  * **Parameter:** objectConfig - `Object`
+ * **Returns:** `mixed` - Your custom created EZ Object in all of its glory
  * **Description:** A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured.  The resulting class is both returned from the function and exported from the `ezobjects-mysql` module.
  
 ### ezobjects.instanceOf(obj, constructorName)
  * **Parameter:** obj - `mixed` - Any object created using an EZ Object class
  * **Parameter:** constructorName - `string`
+ * **Returns:** `boolean`
  * **Description:** A function that tests whether a given object `obj` is an instance of class `constructorName`, meaning `constructorName` is the name of the object's constructor, or the name of any constructor in the object's prototype chain.
 
 ## Basic EZ Object Method Signatures
@@ -331,7 +333,7 @@ In addition, each property you define will have a single method that is a getter
 ### MyObject.myProperty(value)
  * **Parameter:** value - `mixed`
  * **Throws:** `TypeError` if `value` is not of the correct javascript data type for myProperty
- * **Returns:** this
+ * **Returns:** `this`
  * **Description:** Set the value of the property, throwing an error if the javascript data type does not match the configuration, this is how the strict typing is implemented.  This signature returns `this` to allow for set call chaining.
 
 ## MySQL EZ Object Method Signatures
