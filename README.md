@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.1.5
+# EZ Objects - MySQL Edition - v10.1.6
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify)'d) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -15,9 +15,9 @@ to do is create simple class configurations for each of your objects and then cr
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Configuration Specifications](#configuration-specifications)
 * [Defining Additional Class Methods](#defining-additional-class-methods)
+* [Client Side Usage](#client-side-usage)
 * [Wasted Space](#wasted-space)
 * [Advanced Example With Each EZ Object Type](#advanced-example-with-each-ez-object-type)
-* [See Also](#see-also)
 * [Contributing](#contributing)
 * [License](#license)
 
@@ -463,6 +463,15 @@ Material.prototype.weight = function () {
 };
 ```
 
+## Client Side Usage
+
+There is another example available that demonstrates the [browserify](https://github.com/browserify/browserify)'d capabilities of EZ Objects by loading objects client-side over an Ajax back-end:
+
+* [Example Nested Server](example-nested.js)
+* [Example Nested Models](example-nested-models.js)
+* [Example Nested Client](example-nested.html)
+* [Example Nested Browserify Script](example-nested-browserify.sh)
+
 ## Wasted Space
 
 It should be noted that it's possible for there to be considerable space wasted through too liberal use of 
@@ -811,15 +820,6 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
   }
 })();
 ```
-
-## See Also
-
-There is another example available that demonstrates the [browserify](https://github.com/browserify/browserify)'d capabilities of EZ Objects by loading client-side over an Ajax back-end:
-
-* [Example Nested Server](example-nested.js)
-* [Example Nested Models](example-nested-models.js)
-* [Example Nested Client](example-nested.html)
-* [Example Nested Browserify Script](example-nested-browserify.sh)
 
 ## Contributing
 
