@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.13
+# EZ Objects - MySQL Edition - v10.0.14
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -293,12 +293,12 @@ as the default MySQL type.
 The EZ Objects module exports three functions:
 
 ### ezobjects.createTable(objectConfig, db)
- * **Parameter:** objectConfig - `Object`
+ * **Parameter:** objectConfig - `Object` - See [Configuration Specifications](#configuration-specifications)
  * **Parameter:** db - `MySQLConnection` - Created using `mysql-await` module
  * **Description:** A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist.
 
 ### ezobjects.createClass(objectConfig)
- * **Parameter:** objectConfig - `Object`
+ * **Parameter:** objectConfig - `Object` - See [Configuration Specifications](#configuration-specifications)
  * **Returns:** `mixed` - Your custom created EZ Object in all of its glory
  * **Description:** A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured.  The resulting class is both returned from the function and exported from the `ezobjects-mysql` module.
  
