@@ -170,7 +170,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
       smallintExample: -32767,
       mediumintExample: -8388608,
       intExample: -2147483648,
-    //  bigintExample: -9223372036854775808,
+      // bigintExample: -9223372036854775808, Gives ER_WARN_DATA_OUT_OF_RANGE error due to bug?
       doubleExample: 193448295822329038402340234.23840923804823094809234245,
       floatExample: 1927492498374.2348927395,
       decimalExample: 23.452,
