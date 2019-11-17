@@ -17,7 +17,7 @@ module.exports.objects = {};
 
 /**
  * @signature ezobjects.instanceOf(obj, constructorName)
- * @param obj Object
+ * @param obj Object Any object created from an EZ Objects created class
  * @param constructorName string
  * @description A function for determining if an object instance's
  * prototype chain includes a constructor named `constructorName`.
@@ -427,8 +427,8 @@ function validatePropertyConfig(property) {
 }
 
 /** 
- * @signature validateClassConfig(property)
- * @param property Object Class configuration
+ * @signature validateClassConfig(obj)
+ * @param obj Object Configuration object
  * @description Validate configuration for a single class.
  */
 function validateClassConfig(obj) {
@@ -457,8 +457,8 @@ function validateClassConfig(obj) {
 }
 
 /** 
- * @signature validateTableConfig(property)
- * @param property Object Table configuration
+ * @signature validateTableConfig(obj)
+ * @param obj Object Configuration object
  * @description Validate configuration for a single table.
  */
 function validateTableConfig(obj) {  

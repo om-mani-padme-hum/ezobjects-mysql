@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.0.7
+# EZ Objects - MySQL Edition - v10.0.8
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully browserify'd) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -9,8 +9,8 @@ to do is create simple class configurations for each of your objects and then cr
 * [Installation](#installation)
 * [Required Property](#required-property)
 * [Basic Example](#basic-example)
-* [Module Exports](#module-exports)
 * [EZ Object Types](#ez-object-types)
+* [Exported Functions](#exported-functions)
 * [Basic EZ Object Method Signatures](#basic-ez-object-method-signatures)
 * [MySQL EZ Object Method Signatures](#mysql-ez-object-method-signatures)
 * [Configuration Specifications](#configuration-specifications)
@@ -221,19 +221,6 @@ UserAccount {
   _favoriteDay: 2019-09-01T05:00:00.000Z }
 ```
 
-## Module Exports
-
-The EZ Objects module exports three functions:
-
-### ezobjects.createTable(objectConfig, db)
-A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist.
-
-### ezobjects.createClass(objectConfig)
-A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured.  The resulting class is both returned from the function and exported from the `ezobjects-mysql` module.
-
-### ezobjects.instanceOf(obj, constructorName)
-A function that tests whether a given class `obj` is an instance of `constructorName`, meaning `constructorName` is the name of the object's constructor, or the name of any constructor in the object's prototype chain.
-
 ## EZ Object Types
 
 See the table below for a list of EZ Object types along with their JavaScript type and default value, as well 
@@ -299,6 +286,24 @@ as the default MySQL type.
 | **Array\[function]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[object]** | `Array` | `[]` | MEDIUMTEXT |
 | **Array\[MyEZObject]** | `Array` | `[]` | TEXT |
+
+## Module Exports
+
+The EZ Objects module exports three functions:
+
+### ezobjects.createTable(objectConfig, db)
+ * **Parameter:** objectConfig - `Object`
+ * **Parameter:** db - `MySQLConnection` - Created using `mysql-await` module
+ * **Description:** A function that creates a MySQL table corresponding to the configuration outlined in `objectConfig`, if it doesn't already exist.
+
+### ezobjects.createClass(objectConfig)
+ * **Parameter:** objectConfig - `Object`
+ * **Description:** A function that creates an ES6 class corresponding to the configuration outlined in `objectConfig`, with constructor, initializer, getters, setters, and also delete, insert, load, and update if `tableName` is configured.  The resulting class is both returned from the function and exported from the `ezobjects-mysql` module.
+ 
+### ezobjects.instanceOf(obj, constructorName)
+ * **Parameter:** obj - `mixed` - Any object created using an EZ Object class
+ * **Parameter:** constructorName - `string`
+ * **Description:** A function that tests whether a given object `obj` is an instance of class `constructorName`, meaning `constructorName` is the name of the object's constructor, or the name of any constructor in the object's prototype chain.
 
 ## Basic EZ Object Method Signatures
 
@@ -781,7 +786,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
 
 There is another example available that demonstrates the browserify'd capabilities of EZ Objects by loading client-side over an Ajax back-end:
 
-* [Example Nested Server](example-nested.js) - An example where client-side loading of EZ Objects is demonstrated by way of a browserify'd EZ Object model configurations, including loading of custom child objects.
+* [Example Nested Server](example-nested.js)
 * [Example Nested Models](example-nested-models.js)
 * [Example Nested Client](example-nested.html)
 * [Example Nested Browserify Script](example-nested-browserify.sh)
