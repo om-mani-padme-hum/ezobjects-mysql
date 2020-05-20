@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v10.2.1
+# EZ Objects - MySQL Edition - v10.2.2
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify)'d) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -326,7 +326,11 @@ These are the object method signatures even the most basic of EZ Objects will ha
 
 ### MyObject.init([data])
  * **Parameter:** data - `Object`
- * **Description:** Initialize this object using either defaults or any provided key/value pairs in the plain object `data`.  This is also the method used by the constructor.
+ * **Description:** Initialize this object using either defaults or any provided key/value pairs in the plain object `data`.  Keys can either be equal to the name of a property, or they can have an underscore before the name of a property, as would be the case if you were to JSON.stringify() and then JSON.parse() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.  This is also the method used by the constructor.  
+
+### MyObject.init([data])
+ * **Parameter:** data - `Object`
+ * **Description:** Initialize this object using either defaults or any provided key/value pairs in the JSON0-encoded string `data`.  Keys can either be equal to the name of a property, or they can have an underscore before the name of a property, as would be the case if you were to JSON.stringify() and then JSON.parse() an EZ Object.  This allows for easy transferability in cases where JSON is used as the transfer medium.  This is also the method used by the constructor.  
 
 ### MyObject.init([data])
  * **Parameter:** data - `MyObject`

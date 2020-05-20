@@ -665,6 +665,10 @@ module.exports.createClass = (obj) => {
     
     /** Create initializer */
     init(data = {}) {
+      /** If data is a string, assume it's JSON and parse */
+      if ( typeof data == `string` )
+        data = JSON.parse(data);
+      
       /** If there is an 'init' function on super, call it */
       if ( typeof super.init === `function` )
         super.init(data);
@@ -672,12 +676,16 @@ module.exports.createClass = (obj) => {
       /** Loop through each property in the obj */
       obj.properties.forEach((property) => {
         /** Initialize types to defaults */
-        if ( typeof data[property.name] == `undefined` )
-          this[property.name](property.default || property.ezobjectType.default);
-        else if ( typeof data[property.name] == `function` )
+        if ( typeof data[property.name] == `function` )
           this[property.name](data[property.name]());
-        else
+        else if ( typeof data[property.name] != `undefined` )
           this[property.name](data[property.name]);
+        else if ( typeof data[`_${property.name}`] == `function` )
+          this[property.name](data[`_${property.name}`]());
+        else if ( typeof data[`_${property.name}`] != `undefined` )
+          this[property.name](data[`_${property.name}`]);
+        else
+          this[property.name](property.default || property.ezobjectType.default);
       });
     }
   };
