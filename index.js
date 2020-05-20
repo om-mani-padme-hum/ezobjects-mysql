@@ -674,6 +674,8 @@ module.exports.createClass = (obj) => {
         /** Initialize types to defaults */
         if ( typeof data[property.name] == `undefined` )
           this[property.name](property.default || property.ezobjectType.default);
+        else if ( typeof data[property.name] == `function` )
+          this[property.name](data[property.name]());
         else
           this[property.name](data[property.name]);
       });
