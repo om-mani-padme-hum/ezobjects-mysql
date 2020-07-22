@@ -82,7 +82,7 @@ const setTransform = (x, property) => {
     return x === null ? null : (x ? true : false);
   else if ( property.ezobjectType.jsType == `string` )
     return x === null ? null : x.toString();
-  else if ( typeof x === `object` && typeof x._constructorName == `string` )
+  else if ( x && typeof x === `object` && typeof x._constructorName == `string` )
     return new module.exports.objects[x._constructorName](x);
   else
     return x === null ? null : x;
@@ -134,8 +134,8 @@ const setArrayTransform = (x, property) => {
     arr = x.map(y => y === null ? null : (y ? true : false));
   else if ( property.arrayOf.ezobjectType.jsType == `string` )
     arr = x.map(y => y === null ? null : y.toString());
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof x == `object` && x.constructor.name == `Array` && typeof x.every(y => typeof y._constructorName == `string`) )
-    arr = x.map(y => new module.exports.objects[y._constructorName](y));
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof x == `object` && x.constructor.name == `Array` && typeof x.every(y => x === null || typeof y._constructorName == `string`) )
+    arr = x.map(y => y === null ? null : new module.exports.objects[y._constructorName](y));
   else
     arr = x.map(y => y === null ? null : y);
 
