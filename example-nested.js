@@ -54,4 +54,16 @@ app.listen(4000, async () => {
   await worker1.insert(db);
   await worker2.insert(db);
   await manager.insert(db);
+  
+  const manager2 = new models.Manager({
+    _name: `Kate`,
+    _workers: [
+      { _constructorName: `Worker`, _name: `Chris` },
+      { _constructorName: `Worker`, _name: `Lisa` }
+    ]
+  });
+  
+  console.log(manager2);
+  
+  db.end();
 });
