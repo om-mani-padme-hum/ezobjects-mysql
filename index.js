@@ -134,7 +134,7 @@ const setArrayTransform = (x, property) => {
     arr = x.map(y => y === null ? null : (y ? true : false));
   else if ( property.arrayOf.ezobjectType.jsType == `string` )
     arr = x.map(y => y === null ? null : y.toString());
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof x == `object` && x.constructor.name == `Array` && typeof x.every(y => x === null || ( typeof y == `object` && y.constructor.name == `Object` && typeof y._constructorName == `string` ) )
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof x == `object` && x.constructor.name == `Array` && typeof x.every(y => x === null || ( typeof y == `object` && y.constructor.name == `Object` && typeof y._constructorName == `string` ) ) )
     arr = x.map(y => y === null ? null : new module.exports.objects[y._constructorName](y));
   else
     arr = x.map(y => y === null ? null : y);
