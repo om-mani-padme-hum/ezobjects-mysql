@@ -51,26 +51,28 @@ module.exports.instanceOf = (obj, constructorName) => {
  * @description Define default set transform for non-array types 
  */
 const setTransform = (x, property) => {
+  const xDescription = `[${typeof x}][${x ? x.constructor.name : `null`}]`;
+
   if ( x === null && !property.allowNull )
-    throw new TypeError(`${property.className}.${property.name}(): Null value passed to '${property.type}' setter that doesn't allow nulls.`);
+    throw new TypeError(`${property.className}.${property.name}(): Null value ${xDescription} passed to '${property.type}' setter that doesn't allow nulls.`);
   else if ( x !== null && property.ezobjectType.jsType == `number` && isNaN(x) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `string` && typeof x !== `string` && typeof x !== `number` )
-    throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `boolean` && typeof x !== `boolean` )
-    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `function` && typeof x !== `function` )
-    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-function value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.name != `Date` ) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-Date value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.name != `Buffer` ) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Set` && ( typeof x !== `object` || x.constructor.name != `Set` ) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed to '${property.type}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) && typeof x._constructorName != `string` ) ) )
-    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
   if ( property.type == `varchar` )
     return x === null ? null : x.toString().substr(0, property.length);
@@ -95,11 +97,13 @@ const setTransform = (x, property) => {
  * @return mixed Input transformed to output according to array transform method
  * @description Define default set transform for array types 
  */
-const setArrayTransform = (x, property) => {
+const setArrayTransform = (x, property) => {  
+  const xDescription = `[${typeof x}][${x ? x.constructor.name : `null`}]`;
+  
   if ( x === null && !property.allowNull )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
   else if ( !(x instanceof Array) )
-    throw new TypeError(`${property.className}.${property.name}(): Non-Array value passed to 'Array' setter.`);
+    throw new TypeError(`${property.className}.${property.name}(): Non-Array value ${xDescription} passed to 'Array' setter.`);
   else if ( x && x.some(y => y === null && !property.arrayOf.allowNull) )
     throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
   
@@ -215,7 +219,7 @@ const ezobjectTypes = [
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return new module.exports.objects[x._constructorName](x); const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; } },
+  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return x; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; } },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
@@ -248,7 +252,7 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { if ( typeof list[i] == `object` ) { arr.push(new module.exports.objects[list[i]._constructorName](list[i])); } else { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } } return arr; } }
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { if ( typeof list[i] == `object` ) { arr.push(list[i]); } else { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } } return arr; } }
 ];
 
 /** 
