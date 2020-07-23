@@ -63,7 +63,7 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `function` && typeof x !== `function` )
     throw new TypeError(`${property.className}.${property.name}(): Non-function value ${xDescription} passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x !== `object` || x.constructor.name != `Date` ) )
+  else if ( x !== null && property.ezobjectType.jsType == `Date` && ( typeof x != `string` || !x.match(/^[0-9\-T:Z.]+$/) ) && ( typeof x !== `object` || x.constructor.name != `Date` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Date value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Buffer` && ( typeof x !== `object` || x.constructor.name != `Buffer` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value ${xDescription} passed to '${property.type}' setter.`);
@@ -84,6 +84,8 @@ const setTransform = (x, property) => {
     return x === null ? null : (x ? true : false);
   else if ( property.ezobjectType.jsType == `string` )
     return x === null ? null : x.toString();
+  else if ( property.ezobjectType.jsType == `Date` && typeof x == `string` )
+    return new Date(x);
   else if ( x && typeof x === `object` && x.constructor.name == `Object` && typeof x._constructorName == `string` )
     return new module.exports.objects[x._constructorName](x);
   else
@@ -117,7 +119,7 @@ const setArrayTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `function` && x && x.some(y => typeof y !== `function` && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-function value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.arrayOf.ezobjectType.jsType == `Date` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Date` ) && y !== null) )
+  else if ( property.arrayOf.ezobjectType.jsType == `Date` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Date` ) && y !== null && ( typeof y != `string` || !y.match(/^[0-9\-T:Z.]+$/) )) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `Buffer` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Buffer` ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed as element of Array[${property.arrayOf.type}] setter.`);
@@ -138,6 +140,8 @@ const setArrayTransform = (x, property) => {
     arr = x.map(y => y === null ? null : (y ? true : false));
   else if ( property.arrayOf.ezobjectType.jsType == `string` )
     arr = x.map(y => y === null ? null : y.toString());
+  else if ( property.arrayOf.ezobjectType.jsType == `Date` )
+    arr = x.map(y => { if ( y === null ) return null; else if ( typeof y == `string` ) return new Date(y); else return y; });
   else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof x == `object` && x.constructor.name == `Array` && typeof x.every(y => x === null || ( typeof y == `object` && y.constructor.name == `Object` && typeof y._constructorName == `string` ) ) )
     arr = x.map(y => y === null ? null : new module.exports.objects[y._constructorName](y));
   else
