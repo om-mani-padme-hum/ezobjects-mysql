@@ -1,5 +1,5 @@
 /** Require external modules */
-const ezobjects = require(`ezobjects-mysql`);
+const ezobjects = require(`./index`);
 const fs = require(`fs`);
 const util = require(`util`);
 const mysql = require(`mysql-await`);
@@ -312,7 +312,7 @@ const ExtendedObj = ezobjects.createClass(configExtendedObj);
     console.log(exampleOverride2);
   } catch ( err ) {
     /** Cleanly log any errors */
-    console.log(err.message);
+    console.log(err);
   } finally {
     /** Close database connection */
     await db.awaitEnd();

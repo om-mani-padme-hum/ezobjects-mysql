@@ -288,6 +288,10 @@ function validatePropertyConfig(property) {
     if ( typeof property.arrayOf.type != `string` && typeof property.arrayOf.instanceOf != `string` )
       throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
     
+    /** If array-of type exists, convert to lower case */
+    if ( property.arrayOf.type )
+      property.arrayOf.type = property.arrayOf.type.toLowerCase();
+    
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
     property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
 
@@ -685,7 +689,7 @@ module.exports.createClass = (obj) => {
       /** Loop through each property in the obj */
       obj.properties.forEach((property) => {        
         /** Initialize types to defaults */
-        if ( typeof data[property.name] == `function` )
+        if ( property.type != `function` && typeof data[property.name] == `function` )
           this[property.name](data[property.name]());
         else if ( typeof data[property.name] != `undefined` )
           this[property.name](data[property.name]);
