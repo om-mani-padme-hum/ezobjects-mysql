@@ -676,8 +676,8 @@ module.exports.createClass = (obj) => {
       
       /** If this is the top level class */
       if ( this.constructor.name == obj.className ) {
-        /** Add constructor name as property so we can load from JSON parsed object */
-        this._constructorName = this.constructor.name;
+        /** Add non-enumerable constructor name as property so we can load from JSON parsed object */
+        Object.defineProperty(this, `_constructorName`, { enumerable: false, value: this.constructor.name });
         
         /** Initialize object to values in `data` or defaults */
         this.init(data);
