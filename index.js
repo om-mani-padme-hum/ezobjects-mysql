@@ -980,10 +980,9 @@ module.exports.createClass = (obj) => {
             
             /** Append property in object */
             if ( typeof result[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof result[obj.properties[i].name] == `object` && result[obj.properties[i].name].constructor.name == `Array` )
-                result[obj.properties[i].name] = result[obj.properties[i].name].join(`,`);
-              
-              if ( typeof db == `object` )
+              if ( typeof result[obj.properties[i].name] == `object` )
+                this[obj.properties[i].name](result[obj.properties[i].name]);
+              else if ( typeof db == `object` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i], db));
               else
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(result[obj.properties[i].name], obj.properties[i]));
@@ -1014,12 +1013,9 @@ module.exports.createClass = (obj) => {
                         
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
-              if ( typeof arg1[obj.properties[i].name] == `object` && arg1[obj.properties[i].name] !== null ) {
-                if ( arg1[obj.properties[i].name].constructor.name == `Array` )
-                  arg1[obj.properties[i].name] = arg1[obj.properties[i].name].join(`,`);
-              }
-                            
-              if ( typeof db == `object` )
+              if ( typeof arg1[obj.properties[i].name] == `object` )
+                this[obj.properties[i].name](arg1[obj.properties[i].name]);
+              else if ( typeof db == `object` )
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i], db));
               else
                 this[obj.properties[i].name](await obj.properties[i].loadTransform(arg1[obj.properties[i].name], obj.properties[i]));
