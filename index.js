@@ -169,6 +169,10 @@ const setArrayTransform = (x, property) => {
   return x === null ? null : arr;
 };
 
+/** Export setTransform and setArrayTransform for end-user */
+module.exports.setTransform = setTransform;
+module.exports.setArrayTransform = setArrayTransform;
+
 /** 
  * @signature stripUnderscores(obj)
  * @param obj Object
