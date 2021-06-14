@@ -460,6 +460,10 @@ function validateClassConfig(obj) {
   if ( typeof obj.className !== `string` || !obj.className.match(/^[A-Za-z_0-9$]+$/) )
     throw new Error(`ezobjects.validateClassConfig(): Configuration has missing or invalid 'className', must be string containing characters 'A-Za-z_0-9$'.`);
 
+  /** If configuration has invalid 'revisionControlled' configuration, throw error */
+  if ( obj.revisionControlled && typeof obj.revisionControlled != `boolean` )
+    throw new Error(`ezobjects.validateClassConfig(): Configuration has invalid 'revisionControlled' property, must be boolean.`);
+  
   /** Add properties array if one wasn't set */
   if ( !obj.properties )
     obj.properties = [];
@@ -483,8 +487,8 @@ function validateClassConfig(obj) {
  */
 function validateTableConfig(obj) {  
   /** If configuration has missing or invalid 'tableName' configuration, throw error */
-  if ( typeof obj.tableName !== `string` || !obj.tableName.match(/^[a-z_]+$/) )
-    throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z_'.`);
+  if ( typeof obj.tableName !== `string` || !obj.tableName.match(/^[a-z0-9_]+$/) )
+    throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z0-9_'.`);
 
   validateClassConfig(obj);
 }
