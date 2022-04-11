@@ -34,12 +34,12 @@
   "license": "MIT",
   "dependencies": {
     "docket-parser": "^0.7.5",
-    "moment": "^2.26.0",
+    "moment": "^2.29.2",
     "mysql": "^2.18.1",
-    "mysql-await": "^2.1.1"
+    "mysql-await": "^2.1.8"
   },
   "devDependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.3"
   },
   "bugs": {
     "url": "https://github.com/om-mani-padme-hum/ezobjects-mysql/issues"
