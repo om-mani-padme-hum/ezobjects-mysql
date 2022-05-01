@@ -64,28 +64,28 @@ const configUserAccount = {
 /** Create the UserAccount class */
 const UserAccount = ezobjects.createClass(configUserAccount);
 
-/** 
- * Create a new UserAccount called `userAccount`, initializing with 
- * plain object passed to constructor.
- */
-const userAccount = new UserAccount({
-  username: `richlowe`,
-  firstName: `Rich`,
-  lastName: `Lowe`,
-  checkingBalance: 4.32,
-  permissions: [1, 3, 5],
-  favoriteDay: new Date(`01-01-2018`)
-});
-
-/** 
- * Test if `userAccount` is an instance of DatabaseRecord using
- * the included `instanceOf` helper function.
- */
-console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
-
 /** Let's use a self-executing async wrapper so we can await results */
 (async () => {
   try {
+    /** 
+     * Create a new UserAccount called `userAccount`, initializing with 
+     * plain object passed to constructor.
+     */
+    const userAccount = new UserAccount({
+      username: `richlowe`,
+      firstName: `Rich`,
+      lastName: `Lowe`,
+      checkingBalance: 4.32,
+      permissions: [1, 3, 5],
+      favoriteDay: new Date(`01-01-2018`)
+    });
+
+    /** 
+     * Test if `userAccount` is an instance of DatabaseRecord using
+     * the included `instanceOf` helper function.
+     */
+    console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
+
     /** Create `user_accounts` table if it doesn`t already exist */
     await ezobjects.createTable(configUserAccount, db);
 
@@ -116,13 +116,13 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
      * Using the ID captured from the previous insert operation, load 
      * the record from database.
      */
-    await anotherUserAccount.load(id, db);
+    await anotherUserAccount.load(id, db, [`username`, `firstName`, `lastName`]);
 
     /** Log `anotherUserAccount` (should match last `userAccount`) */
     console.log(anotherUserAccount);
 
     /** Delete `anotherUserAccount` from the database */
-    await anotherUserAccount.delete(db);
+    await anotherUserAccount.delete(db);    
   } catch ( err ) {
     /** Cleanly log any errors */
     console.log(err.message);

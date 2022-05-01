@@ -22,7 +22,7 @@ module.exports.objects = {};
  * @description A function for determining if an object instance's
  * prototype chain includes a constructor named `constructorName`.
  */
-module.exports.instanceOf = (obj, constructorName) => {
+const instanceOf = (obj, constructorName) => {
   let found = false;
   
   /** Recursive function for determining if ancestral prototype is an instance of the given `constructorName` */
@@ -71,7 +71,7 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !module.exports.instanceOf(x, property.instanceOf) && typeof x._constructorName != `string` ) ) )
+  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.instanceOf) && typeof x._constructorName != `string` ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
   if ( property.type == `varchar` )
@@ -127,7 +127,7 @@ const setArrayTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `Object` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Object` ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type && typeof y._constructorName !== `string` ) || ( typeof property.arrayOf.instanceOf === `string` && !module.exports.instanceOf(y, property.arrayOf.instanceOf) && typeof y._constructorName !== `string` ))) )
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type && typeof y._constructorName !== `string` ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.instanceOf) && typeof y._constructorName !== `string` ))) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
 
   if ( property.arrayOf.type == `varchar` )
@@ -168,10 +168,6 @@ const setArrayTransform = (x, property) => {
     
   return x === null ? null : arr;
 };
-
-/** Export setTransform and setArrayTransform for end-user */
-module.exports.setTransform = setTransform;
-module.exports.setArrayTransform = setArrayTransform;
 
 /** 
  * @signature stripUnderscores(obj)
@@ -268,7 +264,7 @@ const ezobjectTypes = [
  * @param property Object Property configuration
  * @description Validate configuration for a single property.
  */
-function validatePropertyConfig(property) {  
+const validatePropertyConfig = (property) => {  
   /** If name is missing or not a string, throw error */
   if ( typeof property.name !== `string` )
     throw new Error(`ezobjects.validatePropertyConfig(): Property configured with missing or invalid 'name'.`);
@@ -485,7 +481,7 @@ function validateClassConfig(obj) {
  * @param obj Object Configuration object
  * @description Validate configuration for a single table.
  */
-function validateTableConfig(obj) {  
+const validateTableConfig = (obj) => {  
   /** If configuration has missing or invalid 'tableName' configuration, throw error */
   if ( typeof obj.tableName !== `string` || !obj.tableName.match(/^[a-z0-9_]+$/) )
     throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z0-9_'.`);
@@ -500,7 +496,7 @@ function validateTableConfig(obj) {
  * @description A function for automatically generating a MySQL table, if it doesn't already
  * exist, based on the values in the provided configuration object.
  */
-module.exports.createTable = async (obj, db) => {
+const createTable = async (obj, db) => {
   if ( typeof db != `object` )
     throw new Error(`ezobjects.createTable(): Invalid database argument.`);
   
@@ -671,7 +667,7 @@ module.exports.createTable = async (obj, db) => {
  * @description A function for automatically generating a class object based on
  * the values in the provided configuration object.
  */
-module.exports.createClass = (obj) => {
+const createClass = (obj) => {
   /** Validate class configuration */
   validateClassConfig(obj);
 
@@ -869,7 +865,7 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL load method on prototype */
-    module.exports.objects[obj.className].prototype.load = async function (arg1, db) {
+    module.exports.objects[obj.className].prototype.load = async function (arg1, db, propertiesToLoad = []) {
       /** Re-initialize to defaults */
       this.init();
       
@@ -891,6 +887,10 @@ module.exports.createClass = (obj) => {
           obj.properties.forEach((property) => {
             /** Don't attempt to load properties that are not stored in the database */
             if ( !property.store )
+              return;
+            
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
               return;
             
             /** Append property name to query */
@@ -930,6 +930,10 @@ module.exports.createClass = (obj) => {
           for ( let i = 0, i_max = obj.properties.length; i < i_max; i++ ) {            
             /** Don't attempt to load properties that are not stored in the database */
             if ( !obj.properties[i].store )
+              continue;
+            
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
               continue;
             
             /** Append property in object */
@@ -986,6 +990,10 @@ module.exports.createClass = (obj) => {
             if ( !obj.properties[i].store )
               continue;
             
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
+              continue;
+            
             /** Append property in object */
             if ( typeof result[obj.properties[i].name] !== `undefined` ) {
               if ( typeof result[obj.properties[i].name] == `object` )
@@ -1018,6 +1026,10 @@ module.exports.createClass = (obj) => {
             /** Don`t attempt to load properties that are not stored in the database */
             if ( !obj.properties[i].store )
               continue;
+            
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
+              continue;
                         
             /** Append property in object */
             if ( typeof arg1[obj.properties[i].name] !== `undefined` ) {
@@ -1045,7 +1057,7 @@ module.exports.createClass = (obj) => {
     };
 
     /** Create MySQL update method on prototype */
-    module.exports.objects[obj.className].prototype.update = async function (arg1) { 
+    module.exports.objects[obj.className].prototype.update = async function (arg1, propertiesToLoad = []) { 
       /** Provide option for inserting record from browser if developer implements ajax backend */
       if ( typeof window !== `undefined` && typeof arg1 == `string` ) {
         /** Attempt to parse the URL */
@@ -1079,6 +1091,10 @@ module.exports.createClass = (obj) => {
             /** Ignore ID since we will use that to locate the record, and will never update it, also ignore properties not stored */
             if ( property.name == `id` || !property.store )
               return;
+            
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
+              return;
 
             /** Add property to params array after performing the save transform */
             params.push(property.saveTransform(this[property.name](), property));
@@ -1104,6 +1120,10 @@ module.exports.createClass = (obj) => {
           obj.properties.forEach((property) => {
             /** Ignore ID since we will use that to locate the record, and will never update it, also ignore properties not stored */
             if ( property.name == `id` || !property.store )
+              return;
+            
+            /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
+            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
               return;
 
             /** Append property update to query */
@@ -1143,3 +1163,13 @@ module.exports.createClass = (obj) => {
   /** Return created class */
   return module.exports.objects[obj.className];
 };
+
+/** Export setTransform and setArrayTransform for end-user */
+module.exports.createClass = createClass;
+module.exports.createTable = createTable;
+module.exports.instanceOf = instanceOf;
+module.exports.setTransform = setTransform;
+module.exports.setArrayTransform = setArrayTransform;
+module.exports.validateClassConfig = validateClassConfig;
+module.exports.validatePropertyConfig = validatePropertyConfig;
+module.exports.validateTableConfig = validateTableConfig;

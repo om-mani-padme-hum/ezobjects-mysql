@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v11.2.4
+# EZ Objects - MySQL Edition - v11.3.0
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify)'d) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -57,7 +57,7 @@ It might be best to start off with a basic example where we do the following:
 See below:
 
 ```javascript
-const ezobjects = require(`ezobjects-mysql`);
+const ezobjects = require(`ezobjects-mysql;`);
 const fs = require(`fs`);
 const mysql = require(`mysql-await`);
 
@@ -123,28 +123,28 @@ const configUserAccount = {
 /** Create the UserAccount class */
 const UserAccount = ezobjects.createClass(configUserAccount);
 
-/** 
- * Create a new UserAccount called `userAccount`, initializing with 
- * plain object passed to constructor.
- */
-const userAccount = new UserAccount({
-  username: `richlowe`,
-  firstName: `Rich`,
-  lastName: `Lowe`,
-  checkingBalance: 4.32,
-  permissions: [1, 3, 5],
-  favoriteDay: new Date(`01-01-2018`)
-});
-
-/** 
- * Test if `userAccount` is an instance of DatabaseRecord using
- * the included `instanceOf` helper function.
- */
-console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
-
-/** Let's use a self-executing async function so we can await results */
+/** Let's use a self-executing async wrapper so we can await results */
 (async () => {
   try {
+    /** 
+     * Create a new UserAccount called `userAccount`, initializing with 
+     * plain object passed to constructor.
+     */
+    const userAccount = new UserAccount({
+      username: `richlowe`,
+      firstName: `Rich`,
+      lastName: `Lowe`,
+      checkingBalance: 4.32,
+      permissions: [1, 3, 5],
+      favoriteDay: new Date(`01-01-2018`)
+    });
+
+    /** 
+     * Test if `userAccount` is an instance of DatabaseRecord using
+     * the included `instanceOf` helper function.
+     */
+    console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
+
     /** Create `user_accounts` table if it doesn`t already exist */
     await ezobjects.createTable(configUserAccount, db);
 
@@ -175,13 +175,13 @@ console.log(ezobjects.instanceOf(userAccount, `DatabaseRecord`));
      * Using the ID captured from the previous insert operation, load 
      * the record from database.
      */
-    await anotherUserAccount.load(id, db);
+    await anotherUserAccount.load(id, db, [`username`, `firstName`, `lastName`]);
 
     /** Log `anotherUserAccount` (should match last `userAccount`) */
     console.log(anotherUserAccount);
 
     /** Delete `anotherUserAccount` from the database */
-    await anotherUserAccount.delete(db);
+    await anotherUserAccount.delete(db);    
   } catch ( err ) {
     /** Cleanly log any errors */
     console.log(err.message);
@@ -213,13 +213,13 @@ UserAccount {
   _permissions: [ 1, 3, 5 ],
   _favoriteDay: 2019-09-01T05:00:00.000Z }
 UserAccount {
-  _id: 1,
+  _id: 0,
   _username: `richlowe`,
   _firstName: `Richard`,
   _lastName: `Lowe`,
-  _checkingBalance: 50.27,
-  _permissions: [ 1, 3, 5 ],
-  _favoriteDay: 2019-09-01T05:00:00.000Z }
+  _checkingBalance: 0,
+  _permissions: [],
+  _favoriteDay: null }
 ```
 
 ## EZ Object Types
