@@ -865,9 +865,12 @@ const createClass = (obj) => {
     };
 
     /** Create MySQL load method on prototype */
-    module.exports.objects[obj.className].prototype.load = async function (arg1, db, propertiesToLoad = []) {
+    module.exports.objects[obj.className].prototype.load = async function (arg1, db, propertiesToLoad = [], options = { inverse: false }) {
       /** Re-initialize to defaults */
       this.init();
+      
+      if ( typeof options.inverse != `boolean` )
+        throw new Error(`${obj.className}.load(): options.inverse is not a valid boolean.`);
       
       /** If the first argument is a valid database and the second is a number, load record from database by ID */
       if ( ( typeof arg1 == `number` || typeof arg1 == `string` ) && typeof db == `object` ) {
@@ -890,7 +893,7 @@ const createClass = (obj) => {
               return;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(property.name) ) || ( options.inverse && propertiesToLoad.includes(property.name) ) ) )
               return;
             
             /** Append property name to query */
@@ -933,7 +936,7 @@ const createClass = (obj) => {
               continue;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(obj.properties[i].name) ) || ( options.inverse && propertiesToLoad.includes(obj.properties[i].name) ) ) )
               continue;
             
             /** Append property in object */
@@ -991,7 +994,7 @@ const createClass = (obj) => {
               continue;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(obj.properties[i].name) ) || ( options.inverse && propertiesToLoad.includes(obj.properties[i].name) ) ) )
               continue;
             
             /** Append property in object */
@@ -1028,7 +1031,7 @@ const createClass = (obj) => {
               continue;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(obj.properties[i].name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(obj.properties[i].name) ) || ( options.inverse && propertiesToLoad.includes(obj.properties[i].name) ) ) )
               continue;
                         
             /** Append property in object */
@@ -1057,7 +1060,7 @@ const createClass = (obj) => {
     };
 
     /** Create MySQL update method on prototype */
-    module.exports.objects[obj.className].prototype.update = async function (arg1, propertiesToLoad = []) { 
+    module.exports.objects[obj.className].prototype.update = async function (arg1, propertiesToLoad = [], options = { inverse: false }) { 
       /** Provide option for inserting record from browser if developer implements ajax backend */
       if ( typeof window !== `undefined` && typeof arg1 == `string` ) {
         /** Attempt to parse the URL */
@@ -1093,7 +1096,7 @@ const createClass = (obj) => {
               return;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(property.name) ) || ( options.inverse && propertiesToLoad.includes(property.name) ) ) )
               return;
 
             /** Add property to params array after performing the save transform */
@@ -1123,7 +1126,7 @@ const createClass = (obj) => {
               return;
             
             /** Don't load properties that aren't included in the list of properties to load, all properties loaded if array empty */
-            if ( propertiesToLoad.length > 0 && !propertiesToLoad.includes(property.name) )
+            if ( propertiesToLoad.length > 0 && ( ( !options.inverse && !propertiesToLoad.includes(property.name) ) || ( options.inverse && propertiesToLoad.includes(property.name) ) ) )
               return;
 
             /** Append property update to query */

@@ -1,4 +1,4 @@
-# EZ Objects - MySQL Edition - v11.3.0
+# EZ Objects - MySQL Edition - v11.4.0
 
 EZ Objects (MySQL Edition) is a Node.js module (that can also be usefully [browserify](https://github.com/browserify/browserify)'d) that aims to save 
 you lots of time writing class objects that are strictly typed in JavaScript, and can be tied directly to 
@@ -361,24 +361,32 @@ meaning it's intended to be linked to a MySQL table:
  * **Parameter:** db - `Object`
  * **Description:** Insert this object's property values into the database `db`, table `tableName`, and store the resulting insertId in the `id` property of this object.
 
-### MyObject.load(mysqlRow[, db])
+### MyObject.load(mysqlRow[, db[, propertiesToInclude[, options]]]))
  * **Parameter:** mysqlRow `RowDataPacket` - A MySQL `RowDataPacket` returned as part of a MySQL result set
- * **Parameter:** db - `Object`
+ * **Parameter:** db - `Object` - (optional)
+ * **Parameter:** propertiesToInclude - `Array` - (optional) Properties to load (or not load if inverse option is used)
+ * **Parameter:** options - `Object` - (optional) Desired options (currently just inverse = true/false)
  * **Description:** Load any configured properties from key/value pairs in  `mysqlRow`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
 
-### MyObject.load(obj[, db])
+### MyObject.load(obj[, db,[ propertiesToInclude[, options]]]))
  * **Parameter:** obj Object
- * **Parameter:** db - `Object`
+ * **Parameter:** db - `Object` - (optional)
+ * **Parameter:** propertiesToInclude - `Array` - (optional) Properties to load (or not load if inverse option is used)
+ * **Parameter:** options - `Object` - (optional) Desired options (currently just inverse = true/false)
  * **Description:** Load any configured properties from key/value pairs in `obj`.  You can optionally pass the database `db` if you need it to be provided as a third argument to any loadTransform handlers defined for configured properties.
 
-### MyObject.load(id, db)
+### MyObject.load(id, db[, propertiesToInclude[, options]]))
  * **Parameter:** id number The value of the `id` property of the record you wish to load
  * **Parameter:** db - `Object`
+ * **Parameter:** propertiesToInclude - `Array` - (optional) Properties to load (or not load if inverse option is used)
+ * **Parameter:** options - `Object` - (optional) Desired options (currently just inverse = true/false)
  * **Description:** Load the record in database `db`, table `tableName`, that has its `id` field equal to provided `id` parameter.
 
-### MyObject.load(propertyValue, db)
+### MyObject.load(propertyValue, db[, propertiesToInclude[, options]])
  * **Parameter:** propertyValue - `mixed` - The value of the `otherSearchProperty` property of the record you wish to load
  * **Parameter:** db - `Object`
+ * **Parameter:** propertiesToInclude - `Array` - (optional) Properties to load (or not load if inverse option is used)
+ * **Parameter:** options - `Object` - (optional) Desired options (currently just inverse = true/false)
  * **Description:** Load the record in database `db`, table `tableName`, that has its `otherSearchProperty` field equal to provided `propertyValue` parameter.  Here, the actual field name of `otherSearchProperty` is provided in the object configuration, see the configuration section below.
 
 ### MyObject.load(url[, db])
