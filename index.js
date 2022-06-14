@@ -71,7 +71,7 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.instanceOf) && typeof x._constructorName != `string` ) ) )
+  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.originalInstanceOf) && typeof x._constructorName != `string` ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
   
   if ( property.type == `varchar` )
@@ -127,7 +127,7 @@ const setArrayTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `Object` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Object` ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type && typeof y._constructorName !== `string` ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.instanceOf) && typeof y._constructorName !== `string` ))) )
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type && typeof y._constructorName !== `string` ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.originalInstanceOf) && typeof y._constructorName !== `string` ))) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
 
   if ( property.arrayOf.type == `varchar` )
@@ -286,6 +286,15 @@ const validatePropertyConfig = (property) => {
     property.type = property.type.toLowerCase();
   }
   
+  /** If the original instanceOf has not yet been recorded */
+  if ( property.instanceOf && typeof property.originalInstanceOf !== `string` ) {
+    /** Store original instanceOf with preserved case */
+    property.originalInstanceOf = property.instanceOf;
+
+    /** Convert instanceOf to lower-case for comparison to EZ object types */
+    property.instanceOf = property.instanceOf.toLowerCase();
+  }
+  
   /** Attach arrayOf `ezobjectType` if property type is `array` */
   if ( property.type == `array` ) {
     /** If type is `ARRAY` with no `arrayOf`, throw error */
@@ -296,9 +305,23 @@ const validatePropertyConfig = (property) => {
     if ( typeof property.arrayOf.type != `string` && typeof property.arrayOf.instanceOf != `string` )
       throw new Error(`ezobjects.validatePropertyConfig(): Property '${property.name}' of type ${property.type} with missing or invalid 'arrayOf.type' and/or 'arrayOf.instanceOf', one of them is required.`);
     
-    /** If array-of type exists, convert to lower case */
-    if ( property.arrayOf.type )
+    /** If the original type has not yet been recorded */
+    if ( property.arrayOf.type && typeof property.arrayOf.originalType !== `string` ) {
+      /** Store original type with preserved case */
+      property.arrayOf.originalType = property.arrayOf.type;
+
+      /** Convert type to lower-case for comparison to EZ object types */
       property.arrayOf.type = property.arrayOf.type.toLowerCase();
+    }
+    
+    /** If the original instanceOf has not yet been recorded */
+    if ( property.arrayOf.instanceOf && typeof property.arrayOf.originalInstanceOf !== `string` ) {
+      /** Store original instanceOf with preserved case */
+      property.arrayOf.originalInstanceOf = property.arrayOf.instanceOf;
+
+      /** Convert instanceOf to lower-case for comparison to EZ object types */
+      property.arrayOf.instanceOf = property.arrayOf.instanceOf.toLowerCase();
+    }
     
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
     property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
