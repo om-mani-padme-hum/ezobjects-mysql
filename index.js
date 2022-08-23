@@ -71,7 +71,7 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && ( typeof x._constructorName != `string` || x._constructorName != property.originalType ) ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.originalInstanceOf) && ( typeof x._constructorName != `string` || x._constructorName != property.originalInstanceOf ) ) ) )
+  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && ( typeof x._constructorName != `string` || x._constructorName != property.originalType ) ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.originalInstanceOf) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.originalType === `string` ? property.originalType : property.originalInstanceOf}' setter.`);
   
   if ( property.type == `varchar` )
@@ -127,7 +127,7 @@ const setArrayTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `Object` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Object` ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.originalType == `string` && y.constructor.name != property.arrayOf.originalType && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalType ) ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.originalInstanceOf) && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalInstanceOf ) ) ) ) )
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.originalType == `string` && y.constructor.name != property.arrayOf.originalType && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalType ) ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.originalInstanceOf) ) ) ) )
     throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.originalType === `string` ? property.arrayOf.originalType : property.arrayOf.originalInstanceOf}] setter.`);
 
   if ( property.arrayOf.type == `varchar` )
