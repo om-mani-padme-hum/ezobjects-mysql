@@ -71,8 +71,8 @@ const setTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
   else if ( x !== null && property.ezobjectType.jsType == `Object` && ( typeof x !== `object` || x.constructor.name != `Object` ) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
-  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && typeof x._constructorName != `string` ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.originalInstanceOf) && typeof x._constructorName != `string` ) ) )
-    throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.type === `string` ? property.originalType : property.instanceOf}' setter.`);
+  else if ( x !== null && property.ezobjectType.jsType == `object` && ( typeof x !== `object` || ( typeof property.type == `string` && x.constructor.name != property.originalType && ( typeof x._constructorName != `string` || x._constructorName != property.originalType ) ) || ( typeof property.instanceOf === `string` && !instanceOf(x, property.originalInstanceOf) && ( typeof x._constructorName != `string` || x._constructorName != property.originalInstanceOf ) ) ) )
+    throw new TypeError(`${property.className}.${property.name}(): Invalid value ${xDescription} passed to '${typeof property.originalType === `string` ? property.originalType : property.originalInstanceOf}' setter.`);
   
   if ( property.type == `varchar` )
     return x === null ? null : x.toString().substr(0, property.length);
@@ -127,8 +127,8 @@ const setArrayTransform = (x, property) => {
     throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
   else if ( property.arrayOf.ezobjectType.jsType == `Object` && x && x.some(y => ( typeof y !== `object` || y.constructor.name != `Object` ) && y !== null) )
     throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed as element of Array[${property.arrayOf.type}] setter.`);
-  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.type == `string` && y.constructor.name != property.arrayOf.type && typeof y._constructorName !== `string` ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.originalInstanceOf) && typeof y._constructorName !== `string` ))) )
-    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.type === `string` ? property.arrayOf.type : property.arrayOf.instanceOf}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && x && x.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.originalType == `string` && y.constructor.name != property.arrayOf.originalType && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalType ) ) || ( typeof property.arrayOf.instanceOf === `string` && !instanceOf(y, property.arrayOf.originalInstanceOf) && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalInstanceOf ) ) ) ) )
+    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.originalType === `string` ? property.arrayOf.originalType : property.arrayOf.originalInstanceOf}] setter.`);
 
   if ( property.arrayOf.type == `varchar` )
     arr = x.map(y => y === null ? null : y.substr(0, property.arrayOf.length));
@@ -324,11 +324,11 @@ const validatePropertyConfig = (property) => {
     }
     
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property for later use */
-    property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type );
+    property.ezobjectType = ezobjectTypes.find(x => x.type == property.type && x.arrayOfType == property.arrayOf.type);
 
     /** If no standard type was found, use 'other' type for other objects */
     if ( !property.ezobjectType )
-      property.ezobjectType = ezobjectTypes.find(x => x.type == `array` && x.arrayOfType == `other` );
+      property.ezobjectType = ezobjectTypes.find(x => x.type == `array` && x.arrayOfType == `other`);
     
     /** If it's a standard EZ Object type, attach 'ezobjectType' to property arrayOf type for later use */
     property.arrayOf.ezobjectType = ezobjectTypes.find(x => x.type == property.arrayOf.type);
