@@ -1,6 +1,6 @@
 const docket = require(`docket-parser`);
 
-docket.title(`EZ Objects v11.5.3`);
+docket.title(`EZ Objects v11.5.4`);
 docket.linkClass(`text-success`);
 docket.parseFiles([`index.js`]);
 docket.generateDocs(`docs`);
