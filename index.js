@@ -1001,6 +1001,9 @@ const createClass = (obj) => {
         if ( !result )
           throw new Error(`${obj.className}.load(): Unable to load record, invalid response from remote host.`);
 
+        if ( result.error && typeof result.error == `string` )
+          throw new Error(`${obj.className}.load(): ${result.error}`);
+        
         /** Strip underscores */
         stripUnderscores(result);
 
