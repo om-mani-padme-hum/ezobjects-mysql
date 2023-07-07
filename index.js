@@ -463,7 +463,7 @@ const validatePropertyConfig = (property) => {
     property.allowNull = false;
   else if ( typeof property.allowNull !== `boolean` )
     property.allowNull = true;
-}
+};
 
 /** 
  * @signature validateClassConfig(obj)
@@ -510,7 +510,7 @@ const validateTableConfig = (obj) => {
     throw new Error(`ezobjects.validateTableConfig(): Configuration has missing or invalid 'tableName', must be string containing characters 'a-z0-9_'.`);
 
   validateClassConfig(obj);
-}
+};
 
 /*
  * @signature ezobjects.createTable(obj, db)
@@ -744,7 +744,7 @@ const createClass = (obj) => {
     module.exports.objects[obj.className].prototype[property.name] = function (arg) {
       /** Getter */
       if ( arg === undefined ) 
-        return this[`_${property.name}`]; 
+        return !this[`_${property.name}`]._isAddonObject ? this[`_${property.name}`] : new module.exports.objects[obj.className]().init(this[`_${property.name}`]); 
             
       /** Setter */
       this[`_${property.name}`] = property.setTransform(arg, property); 
