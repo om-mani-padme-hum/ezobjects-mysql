@@ -9,8 +9,11 @@
  */
 
 /** Require external modules */
-const url = require(`url`);
+const escape = require(`htmlspecialchars`);
+const crypto = require(`crypto`);
 const moment = require(`moment`);
+const path = require(`path`);
+const fs = require(`fs`);
 
 /** Create object to hold our created EZ objects */
 module.exports.objects = {};
@@ -190,25 +193,289 @@ const stripUnderscores = (obj) => {
   });
 };
 
+/** 
+ * @signature validateInput(property)
+ * @param property object EZ Object property configuration
+ * @return error if an inconsesty is detected
+ */
+const validateInput = (property, value, data, constants) => {
+  const xDescription = `[${typeof value}][${value ? value.constructor.name : `null`}]`;
+
+  if ( value === null && !property.allowNull )
+    throw new TypeError(`${property.className}.${property.name}(): Null value ${xDescription} passed to '${property.type}' setter that doesn't allow nulls.`);
+  else if ( value !== null && property.ezobjectType.jsType == `number` && isNaN(value) && value != `N/A` )
+    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `string` && typeof value !== `string` && typeof value !== `number` )
+    throw new TypeError(`${property.className}.${property.name}(): Non-string/Non-number value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `boolean` && ( typeof value !== `boolean` && typeof value !== `string` ) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `function` && typeof value !== `function` )
+    throw new TypeError(`${property.className}.${property.name}(): Non-function value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `Date` && !new Date(value) instanceof Date && !isNaN(new Date(value)) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Date value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `Buffer` && ( typeof value !== `object` || value.constructor.name != `Buffer` ) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `Set` && ( typeof value !== `object` || value.constructor.name != `Set` ) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Set value ${xDescription} passed to '${property.type}' setter.`);
+  else if ( value !== null && property.ezobjectType.jsType == `Object` && ( typeof value !== `object` || value.constructor.name != `Object` ) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Object value ${xDescription} passed to '${property.type}' setter.`);
+
+  if ( typeof property.validation == `function` && !property.validation(value) )
+    throw new TypeError(property.errorMessage);
+
+  /** Validation according to the input type option */
+  if ( property.addEditConfig.inputType == `select` ) {
+    if ( ( property.addEditConfig.constantsCompare && !Object.values(property.addEditConfig.constantsCompare).includes(parseInt(value)) && parseInt(value) != constants.NOT_APPLICABLE ) || ( !property.addEditConfig.constantsCompare && !Object.values(property.addEditConfig.constants).includes(parseFloat(value)) && parseInt(value) != constants.NOT_APPLICABLE ) )
+      throw new TypeError(`${property.className}.${property.name}(): The ${property.name} provided was not valid.`);
+  } else if ( property.addEditConfig.inputType == `number` ) {
+    if ( (isNaN(value) && value != `N/A`) || parseFloat(value) < 0 && !property.addEditConfig.allowNegativeNumber ) {
+      throw new TypeError(`The ${property.name} provided was not valid.`);}
+  } else if ( property.addEditConfig.inputType == `password` ) {
+    /** Validate password */
+    if ( !data.email.match(/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i) ) {
+      throw new TypeError(`Invalid email address!`);
+    } else if ( data.a == `addRecord` || ( data.a == `editRecord` && value.length > 0 ) ) {
+      if ( value.length < 8 )
+        throw new TypeError(`Password must be at least 8 characters.`);
+      else if ( !value.match(/[a-z]{1}/) || !value.match(/[A-Z]{1}/) || !value.match(/[0-9]{1}/) )
+        throw new TypeError(`Password must contain at least one lowercase letter, one uppercase letter, and one number.`);
+      else if ( value.match(/\s/) )
+        throw new TypeError(`Password cannot contain spaces.`);
+      else if ( value != data[`${property.name}2`] )
+        throw new TypeError(`Passwords do not match.`);
+    }
+  } else if ( property.addEditConfig.inputType == `document` ) {
+    if ( value.match(/&lt;[^]*&gt;/g) )
+      value = escape(value);
+  }
+};
+
+/** 
+ * @signature assignInput(property, model)
+ * @param property object EZ Object property configuration
+ * @param model object loaded or not, prepared to assign the properties
+ * @return error if an inconsesty is detected
+ */
+const assignInput = (property, value, data, files, previousValue, constants) => {
+  if ( typeof property.formatting == `function` )
+    return typeof property.formatting == `function` ? property.formatting(value) : value;
+
+  if ( typeof property.addEditConfig == `object` ) {
+    /** For select type input and not boolean, pass the value from the view to the property on the model */
+    if ( ( property.addEditConfig.inputType == `select` && property.type != `boolean` ) || property.addEditConfig.inputType == `selectNumbers` || ( property.addEditConfig.inputType == `selectFromData` && property.type == `int` ) )
+      return property.type == `double` ? parseFloat(value) : parseInt(value);
+
+    /** For select type input pass with boolean values, pass the value from the view to the property on the model */
+    else if ( property.addEditConfig.inputType == `select` && property.type == `boolean` )
+      return value == constants.TRUE ? true : false;
+
+    /** For select type input pass with boolean values, pass the value from the view to the property on the model */
+    else if ( property.addEditConfig.inputType == `selectFromData` && property.type != `int` )
+      return this.propertiesLoaded()[config.propertiesToLoad].find(x => x.id() == parseInt(value));
+
+    /** For array type inputs loop on the values from the views and pass them to the property on the model */
+    else if ( property.addEditConfig.inputType == `array` || property.addEditConfig.inputType == `arrayManualInput` || property.addEditConfig.inputType == `arrayFromQuery` )
+      return value.length > 0 ? value.split(`|`).map(x => property.arrayOf.type == `double` ? parseFloat(x.split(`,`)[1]) : x.split(`,`)[1]) : [];
+
+    /** For array input that bring the information from a query, loop and pass the values from the view to the prperty on the model  */
+    else if ( property.addEditConfig.inputType == `arrayElementAndRevisionFromQuery` )
+      return value.length > 0 ? value.split(`|`).map(x => `${x.split(`,`)[1]}|${x.split(`,`)[2]}`) : [];
+
+    /** For array type inputs loop on the values, that are not numbers, from the views and pass them to the property on the model */
+    else if ( property.addEditConfig.inputType == `arrayFromConstants` )
+      return value.length > 0 ? value.split(`|`).map(x => parseInt(x.split(`,`)[1])) : [];
+
+    /** For number type input pass the value from the view to the property on the model, if it doesnt exists pass a NA value */
+    else if ( property.addEditConfig.inputType == `number` )
+      return value == `N/A` ? -1 : value;
+
+    /** For the text/link/document type input pass the value from the view to the property on the model */
+    else if ( property.addEditConfig.inputType == `text` || property.addEditConfig.inputType == `longText` || property.addEditConfig.inputType == `link` || property.addEditConfig.inputType == `document` ){
+      return value;
+    }
+
+    /** For the date input type, format the value from the view and pass it to the property on the model */
+    else if( property.addEditConfig.inputType == `date` ){
+      return moment.tz(value, `America/Chicago`).toDate();
+    }
+
+    /** @todo Figure out why we had to adjust timezone here */
+
+    /** For the time input type, format the value from the view and pass it to the property on the model */
+    else if( property.addEditConfig.inputType == `time` ){
+      return `${value}:00`;
+    }
+
+    /** For select input where you need to save only the value from a query, pass it directly to the property of the model */
+    else if ( property.addEditConfig.inputType == `selectFromQuery` ){
+      return value == constants.NO_INFO ? null : new module.exports.objects[property.originalType]().id(value);
+    }
+
+    /** For the password type input you need to hash the value before you pass it to the property on the model */
+    else if ( property.addEditConfig.inputType == `password` && value.length > 0 ) {
+      const hash = crypto.createHash(`sha512`);
+
+      hash.update(value);
+
+      return hash.digest(`hex`);
+    }
+
+    /** For the file input type, copy the file to the local repository and save the path on the property of the object */
+    else if ( property.addEditConfig.inputType == `file` ) {
+      if ( typeof files[property.name] == `object` ) {
+        const file = files[property.name][0];
+
+        if ( previousValue.length > 0 && data.a == `editRecord` || ( data.action == constants.editOptions.KEEP_REVISION && data.a == `editRecord`) )
+          fs.unlinkSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${previousValue}`));
+
+        /** Determine original and lower case extension */
+        const extNameOriginal = path.extname(file.originalname);
+        const extNameLowerCase = path.extname(file.originalname).toLowerCase();
+
+        /** If the extension of the file doesn't exists on the constants array of extensions allowed, throw error */
+        if ( !constants.allowedAttachmentExtensions.includes(extNameLowerCase) )
+          throw new req.StrappedError().color(`danger`).cols(4).strong(`Error:`).text(`The extension of the file ${path.basename(file.originalname)} is not valid!.`);
+
+        /** Create new file name for attachment with date/time stamp */
+        const newFileName = path.basename(file.originalname, extNameOriginal).replace(` `, `_`) + `_` + moment().format(`MM_DD_Y_HH_mm_ss`) + extNameOriginal;
+
+        /** If the file name already exists in the attachments folder, throw error */
+        if ( fs.existsSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${newFileName}`)) )
+          throw new req.StrappedError().color(`danger`).cols(4).strong(`Error:`).text(`This file name already exists!.`);
+
+        /** If the size of the file is greater than 10 MB, throw error */
+        if ( file.size / 1024 / 1024 > 10 )
+          throw new req.StrappedError().color(`danger`).cols(4).strong(`Error:`).text(`The size of the file ${path.basename(file.originalname)}, is greater than 10 MB (${numeral(file.size / 1024 / 1024).format(0)} MB)!.`);
+
+        /** Rename the file from the temporary path to the new path */
+        fs.renameSync(path.resolve(`C:/shreveport/${property.addEditConfig.folderName}/../${file.path}`), path.resolve(`C:/shreveport/${property.addEditConfig.folderName}/${newFileName}`));
+
+        /** Add new file name to array */
+        return newFileName;
+      } else if ( data.a == `editRecord` && typeof files[property.name] != `object` && Object.keys(files).length != 0 ) {
+        if ( previousValue.length > 0 && data.a == `editRecord` )
+          fs.unlinkSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${previousValue}`));
+
+        return ``;
+      }
+    }
+
+    /** For the select of multiple options you use this one where all the values are joined and saved as numbers on the property of the model */
+    else if ( property.addEditConfig.inputType == `checkboxes` ) {
+      const inputValues = req.data[property.name] ? req.data[property.name].map(x => parseInt(x)) : [];
+
+      property.addEditConfig.constantsList.forEach((_, index) => {
+        if ( !this.data().permission && property.addEditConfig.constantsCompare.includes(index) )
+          return;
+
+        if ( inputValues.includes(index) && !previousValue.includes(index) )
+          previousValue.push(index);
+        else if ( !inputValues.includes(index) && previousValue.includes(index) )
+          previousValue.splice(previousValue.indexOf(index), 1);
+      });
+
+      return previousValue;
+    }
+  }
+
+  return property.default;
+};
+
+/** 
+ * @signature assignArrayInputs(x, property)
+ * @param x string|int ID # or otherSearchProperty
+ * @param property object EZ Object property configuration
+ * @description Define default assing transform for array types on inputs 
+ */
+const setArrayInputs = (property, value, data, files, previousValue, constants) => {
+  const xDescription = `[${typeof value}][${value ? value.constructor.name : `null`}]`;
+  
+  if ( value === null && !property.allowNull )
+    throw new TypeError(`${property.className}.${property.name}(): Null value passed to 'Array' setter that doesn't allow nulls.`);
+  else if ( !(value instanceof Array) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Array value ${xDescription} passed to 'Array' setter.`);
+  else if ( value && value.some(y => y === null && !property.arrayOf.allowNull) )
+    throw new TypeError(`${property.className}.${property.name}(): Null value passed as element of 'Array[${property.arrayOf.type}]' setter that doesn't allow null elements.`);
+  
+  let arr = [];
+    
+  if ( property.arrayOf.ezobjectType.jsType == `number` && value && value.some(y => isNaN(y) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-numeric value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `string` && value && value.some(y => typeof y !== `string` && y !== `number` && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-string value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `boolean` && value && value.some(y => typeof y !== `boolean` && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-boolean value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `function` && value && value.some(y => typeof y !== `function` && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-function value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `Date` && value && value.some(y => ( typeof y !== `object` || y.constructor.name != `Date` ) && y !== null && ( typeof y != `string` || !y.match(/^[0-9\-T:Z.]+$/) )) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Date value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `Buffer` && value && value.some(y => ( typeof y !== `object` || y.constructor.name != `Buffer` ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Buffer value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `Set` && value && value.some(y => ( typeof y !== `object` || y.constructor.name != `Set` ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Set value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `Object` && value && value.some(y => ( typeof y !== `object` || y.constructor.name != `Object` ) && y !== null) )
+    throw new TypeError(`${property.className}.${property.name}(): Non-Object value passed as element of Array[${property.arrayOf.type}] setter.`);
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && value && value.some(y => y !== null && (typeof y !== `object` || ( typeof property.arrayOf.originalType == `string` && y.constructor.name != property.arrayOf.originalType && ( typeof y._constructorName !== `string` || y._constructorName != property.arrayOf.originalType ) ) || ( typeof property.arrayOf.instanceOf === `string` && !y._isAddonObject && !instanceOf(y, property.arrayOf.originalInstanceOf) ) ) ) )
+    throw new TypeError(`${property.className}.${property.name}(): Invalid value passed as element of Array[${typeof property.arrayOf.originalType === `string` ? property.arrayOf.originalType : property.arrayOf.originalInstanceOf}] setter.`);
+
+  if ( property.arrayOf.type == `varchar` )
+    arr = value.map(y => y === null ? null : y.substr(0, property.arrayOf.length));
+  else if ( property.arrayOf.ezobjectType.hasDecimals )
+    arr = value.map(y => y === null ? null : parseFloat(y));
+  else if ( property.arrayOf.ezobjectType.jsType == `number` )
+    arr = value.map(y => y === null ? null : parseInt(y));
+  else if ( property.arrayOf.ezobjectType.jsType == `boolean` )
+    arr = value.map(y => y === null ? null : (y ? true : false));
+  else if ( property.arrayOf.ezobjectType.jsType == `string` )
+    arr = value.map(y => y === null ? null : y.toString());
+  else if ( property.arrayOf.ezobjectType.jsType == `Date` )
+    arr = value.map(y => { if ( y === null ) return null; else if ( typeof y == `string` ) return new Date(y); else return y; });
+  else if ( property.arrayOf.ezobjectType.jsType == `object` && typeof value == `object` && value && value.constructor.name == `Array` && typeof value.every(y => value === null || ( typeof y == `object` && y && y.constructor.name == `Object` && typeof y._constructorName == `string` ) ) )
+    arr = value.map(y => y === null ? null : new module.exports.objects[y._constructorName](y));
+  else
+    arr = value.map(y => y === null ? null : y);
+
+  Object.defineProperty(arr, `origPush`, { enumerable: false, value: arr.push });
+  Object.defineProperty(arr, `origUnshift`, { enumerable: false, value: arr.unshift });
+  Object.defineProperty(arr, `origFill`, { enumerable: false, value: arr.fill });
+  
+  Object.defineProperty(arr, `push`, {
+    enumerable: false,
+    value: function () { for ( let i = 0, i_max = arguments.length; i < i_max; i++ ) this.origPush(assignInput(property, value, data, files, previousValue, constants)); return this.length; }
+  });
+  
+  Object.defineProperty(arr, `unshift`, {
+    enumerable: false,
+    value: function () { for ( let i = 0, i_max = arguments.length; i < i_max; i++ ) this.origUnshift(assignInput(property, value, data, files, previousValue, constants)); return this.length; }
+  });
+  
+  Object.defineProperty(arr, `fill`, {
+    enumerable: false,
+    value: function (value, start, end) { return this.origFill(assignInput(property, value, data, files, previousValue, constants), start, end); }
+  });
+    
+  return value === null ? null : arr;
+};
+
 /** Define the EZ Object types, their associated JavaScript and MySQL types, defaults, quirks, transforms, etc... */
 const ezobjectTypes = [
   { type: `bit`, jsType: `Buffer`, mysqlType: `bit`, default: Buffer.from([]), hasLength: true, setTransform: setTransform, saveTransform: x => x.length > 0 ? parseInt(x.join(``), 2) : 0 },
-  { type: `tinyint`, jsType: `number`, mysqlType: `tinyint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
-  { type: `smallint`, jsType: `number`, mysqlType: `smallint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
-  { type: `mediumint`, jsType: `number`, mysqlType: `mediumint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
-  { type: `int`, jsType: `number`, mysqlType: `int`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `tinyint`, jsType: `number`, mysqlType: `tinyint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `smallint`, jsType: `number`, mysqlType: `smallint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `mediumint`, jsType: `number`, mysqlType: `mediumint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `int`, jsType: `number`, mysqlType: `int`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
   { type: `bigint`, jsType: `number`, mysqlType: `bigint`, default: 0, hasLength: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, loadTransform: x => parseInt(x) },
   { type: `real`, jsType: `number`, mysqlType: `real`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
-  { type: `double`, jsType: `number`, mysqlType: `double`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
-  { type: `float`, jsType: `number`, mysqlType: `float`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform },
-  { type: `decimal`, jsType: `number`, mysqlType: `decimal`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
+  { type: `double`, jsType: `number`, mysqlType: `double`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `float`, jsType: `number`, mysqlType: `float`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, lengthRequiresDecimals: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `decimal`, jsType: `number`, mysqlType: `decimal`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
   { type: `numeric`, jsType: `number`, mysqlType: `numeric`, default: 0, hasLength: true, hasDecimals: true, hasUnsignedAndZeroFill: true, setTransform: setTransform },
-  { type: `date`, jsType: `Date`, mysqlType: `date`, default: null, saveTransform: x => x ? moment(x).format(`YYYY-MM-DD`) : null, loadTransform: x => x ? new Date(x) : null, setTransform: setTransform },
+  { type: `date`, jsType: `Date`, mysqlType: `date`, default: null, saveTransform: x => x ? moment(x).format(`YYYY-MM-DD`) : null, validateInput: validateInput, assignInput: assignInput, loadTransform: x => x ? new Date(x) : null, setTransform: setTransform },
   { type: `time`, jsType: `string`, mysqlType: `time`, default: `00:00:00`, setTransform: setTransform },
   { type: `timestamp`, jsType: `Date`, mysqlType: `timestamp`, default: null, setTransform: setTransform, saveTransform: x => x ? moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : null, loadTransform: x => x ? new Date(x) : null },
-  { type: `datetime`, jsType: `Date`, mysqlType: `datetime`, default: null, setTransform: setTransform, saveTransform: x => x ? moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : null, loadTransform: x => x ? new Date(x) : null },
+  { type: `datetime`, jsType: `Date`, mysqlType: `datetime`, default: null, setTransform: setTransform, saveTransform: x => x ? moment(x).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : null, loadTransform: x => x ? new Date(x) : null, validateInput: validateInput, assignInput: assignInput },
   { type: `char`, jsType: `string`, mysqlType: `char`, default: ``, hasLength: true, hasCharacterSetAndCollate: true, setTransform: setTransform },
-  { type: `varchar`, jsType: `string`, mysqlType: `varchar`, default: ``, hasLength: true, lengthRequired: true, hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `varchar`, jsType: `string`, mysqlType: `varchar`, default: ``, hasLength: true, lengthRequired: true, hasCharacterSetAndCollate: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
   { type: `binary`, jsType: `Buffer`, mysqlType: `binary`, default: Buffer.from([]), hasLength: true, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
   { type: `varbinary`, jsType: `Buffer`, mysqlType: `varbinary`, default: Buffer.from([]), lengthRequired: true, hasLength: true, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
   { type: `tinyblob`, jsType: `Buffer`, mysqlType: `tinyblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
@@ -216,32 +483,32 @@ const ezobjectTypes = [
   { type: `mediumblob`, jsType: `Buffer`, mysqlType: `mediumblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
   { type: `longblob`, jsType: `Buffer`, mysqlType: `longblob`, default: Buffer.from([]), setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => Buffer.from(x) },
   { type: `tinytext`, jsType: `string`, mysqlType: `tinytext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
-  { type: `text`, jsType: `string`, mysqlType: `text`, default: ``, hasLength: true, hasCharacterSetAndCollate: true, setTransform: setTransform},
-  { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
-  { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform },
+  { type: `text`, jsType: `string`, mysqlType: `text`, default: ``, hasLength: true, hasCharacterSetAndCollate: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `mediumtext`, jsType: `string`, mysqlType: `mediumtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
+  { type: `longtext`, jsType: `string`, mysqlType: `longtext`, default: ``, hasCharacterSetAndCollate: true, setTransform: setTransform, validateInput: validateInput, assignInput: assignInput },
   { type: `set`, jsType: `Set`, mysqlType: `set`, default: new Set(), hasCharacterSetAndCollate: true, setTransform: setTransform, saveTransform: x => Array.from(x.values()).join(`,`), loadTransform: x => new Set(x.split(`,`)) },
-  { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false },
+  { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false, save: x => x == constants.TRUE ? true : false, validateInput: validateInput, assignInput: assignInput },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
-  { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null, getTransform: (x, property, obj) => x._isAddonObject ? new module.exports.objects[obj.className]().init(x) : x, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return x; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; } },
+  { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x), validateInput: validateInput, assignInput: assignInput },
+  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return x; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; }, validateInput: validateInput, assignInput: assignInput },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `smallint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `mediumint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `int`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)), assignInput: setArrayInputs},
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `smallint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `mediumint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `int`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bigint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `real`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `double`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `float`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `decimal`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `double`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `float`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `decimal`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `numeric`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseFloat(y)) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `date`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? moment(y).format(`YYYY-MM-DD`) : `null`).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y != `null` ? new Date(y) : null) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `date`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? moment(y).format(`YYYY-MM-DD`) : `null`).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y != `null` ? new Date(y) : null), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `time`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `timestamp`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : `null`).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y != `null` ? new Date(y) : null) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `datetime`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : `null`).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y != `null` ? new Date(y) : null) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `datetime`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? moment(y).format(`YYYY-MM-DD HH:mm:ss.SSSSSS`) : `null`).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y != `null` ? new Date(y) : null), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `char`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `varchar`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `varchar`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `binary`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `varbinary`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
@@ -249,14 +516,14 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longblob`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinytext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `text`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
-  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`) },
+  { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `text`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `mediumtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`), assignInput: setArrayInputs },
+  { type: `array`, jsType: `Array`, mysqlType: `longtext`, default: [], arrayOfType: `longtext`, setTransform: setArrayTransform, saveTransform: x => x.join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `set`, setTransform: setArrayTransform, saveTransform: x => x.map(y => Array.from(y.values()).join(`,`)).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => new Set(y.split(`,`))) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false) },
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, getTransform: (x, property) => x.length > 0 && x[0]._isAddonObject ? x.map(y => new module.exports.objects[y._constructorName]().init(y)) : x, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { if ( typeof x == `object` && x.constructor.name == `Array` ) return x.map(y => new module.exports.objects[y._constructorName](y)); const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } return arr; } }
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { if ( typeof x == `object` && x.constructor.name == `Array` ) return x.map(y => new module.exports.objects[y._constructorName](y)); const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } return arr; } }
 ];
 
 /** 
@@ -453,6 +720,14 @@ const validatePropertyConfig = (property) => {
   /** If there is no load transform, set to default */
   if ( typeof property.loadTransform !== `function` )
     property.loadTransform = typeof property.ezobjectType == `object` && typeof property.ezobjectType.loadTransform == `function` ? property.ezobjectType.loadTransform : defaultTransform;
+
+  /** If there is no validate inputs, set to default */
+  if ( typeof property.validateInput !== `function` )
+    property.validateInput = typeof property.ezobjectType == `object` && typeof property.ezobjectType.validateInput == `function` ? property.ezobjectType.validateInput : defaultTransform;
+
+  /** If there is no assign inputs, set to default */
+  if ( typeof property.assignInput !== `function` )
+    property.assignInput = typeof property.ezobjectType == `object` && typeof property.ezobjectType.assignInput == `function` ? property.ezobjectType.assignInput : defaultTransform;
       
   /** Fully determine whether to store properties in database */
   if ( typeof property.store !== `boolean` )
@@ -744,7 +1019,7 @@ const createClass = (obj) => {
     module.exports.objects[obj.className].prototype[property.name] = function (arg) {
       /** Getter */
       if ( arg === undefined ) 
-        return typeof property.getTransform == `function` ? property.getTransform(this[`_${property.name}`], property) : this[`_${property.name}`]; 
+        return this[`_${property.name}`]; 
             
       /** Setter */
       this[`_${property.name}`] = property.setTransform(arg, property); 
