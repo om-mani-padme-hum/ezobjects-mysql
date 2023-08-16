@@ -9,6 +9,7 @@
  */
 
 /** Require external modules */
+const constants = require(`./constants`);
 const crypto = require(`crypto`);
 const escape = require(`htmlspecialchars`);
 const fs = require(`fs`);
@@ -198,7 +199,7 @@ const stripUnderscores = (obj) => {
  * @param property object EZ Object property configuration
  * @return error if an inconsesty is detected
  */
-const validateInput = (property, value, data, constants) => {
+const validateInput = (property, value, data) => {
   const xDescription = `[${typeof value}][${value ? value.constructor.name : `null`}]`;
 
   if ( value === null && !property.allowNull )
@@ -225,7 +226,7 @@ const validateInput = (property, value, data, constants) => {
 
   /** Validation according to the input type option */
   if ( property.addEditConfig.inputType == `select` ) {
-    if ( ( property.addEditConfig.constantsCompare && !Object.values(property.addEditConfig.constantsCompare).includes(parseInt(value)) && parseInt(value) != constants.NOT_APPLICABLE ) || ( !property.addEditConfig.constantsCompare && !Object.values(property.addEditConfig.constants).includes(parseFloat(value)) && parseInt(value) != constants.NOT_APPLICABLE ) )
+    if ( ( property.addEditConfig.constants && !Object.values(property.addEditConfig.constants).includes(parseInt(value)) && parseInt(value) != constants.NOT_APPLICABLE ) )
       throw new TypeError(`${property.className}.${property.name}(): The ${property.name} provided was not valid.`);
   } else if ( property.addEditConfig.inputType == `number` ) {
     if ( (isNaN(value) && value != `N/A`) || parseFloat(value) < 0 && !property.addEditConfig.allowNegativeNumber ) {
@@ -256,7 +257,7 @@ const validateInput = (property, value, data, constants) => {
  * @param model object loaded or not, prepared to assign the properties
  * @return error if an inconsesty is detected
  */
-const assignInput = (property, value, data, files, previousValue, constants) => {
+const assignInput = (property, value, data, files, previousValue) => {
   if ( typeof property.formatting == `function` )
     return typeof property.formatting == `function` ? property.formatting(value) : value;
 
@@ -363,7 +364,7 @@ const assignInput = (property, value, data, files, previousValue, constants) => 
       const inputValues = req.data[property.name] ? req.data[property.name].map(x => parseInt(x)) : [];
 
       property.addEditConfig.constantsList.forEach((_, index) => {
-        if ( !this.data().permission && property.addEditConfig.constantsCompare.includes(index) )
+        if ( !this.data().permission && property.addEditConfig.constants.includes(index) )
           return;
 
         if ( inputValues.includes(index) && !previousValue.includes(index) )
@@ -1467,6 +1468,7 @@ const createClass = (obj) => {
 };
 
 /** Export setTransform and setArrayTransform for end-user */
+module.exports.constants = constants;
 module.exports.createClass = createClass;
 module.exports.createTable = createTable;
 module.exports.instanceOf = instanceOf;
