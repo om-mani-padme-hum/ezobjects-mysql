@@ -9,11 +9,11 @@
  */
 
 /** Require external modules */
-const escape = require(`htmlspecialchars`);
 const crypto = require(`crypto`);
+const escape = require(`htmlspecialchars`);
+const fs = require(`fs`);
 const moment = require(`moment`);
 const path = require(`path`);
-const fs = require(`fs`);
 
 /** Create object to hold our created EZ objects */
 module.exports.objects = {};
@@ -296,10 +296,8 @@ const assignInput = (property, value, data, files, previousValue, constants) => 
 
     /** For the date input type, format the value from the view and pass it to the property on the model */
     else if( property.addEditConfig.inputType == `date` ){
-      return moment.tz(value, `America/Chicago`).toDate();
+      return moment.tz(value, property.addEditConfig.timezone ? property.addEditConfig.timezone : `America/Chicago`).toDate();
     }
-
-    /** @todo Figure out why we had to adjust timezone here */
 
     /** For the time input type, format the value from the view and pass it to the property on the model */
     else if( property.addEditConfig.inputType == `time` ){
@@ -326,7 +324,7 @@ const assignInput = (property, value, data, files, previousValue, constants) => 
         const file = files[property.name][0];
 
         if ( previousValue.length > 0 && data.a == `editRecord` || ( data.action == constants.editOptions.KEEP_REVISION && data.a == `editRecord`) )
-          fs.unlinkSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${previousValue}`));
+          fs.unlinkSync(path.resolve(`${property.addEditConfig.path}/../${property.addEditConfig.folderName}/${previousValue}`));
 
         /** Determine original and lower case extension */
         const extNameOriginal = path.extname(file.originalname);
@@ -340,7 +338,7 @@ const assignInput = (property, value, data, files, previousValue, constants) => 
         const newFileName = path.basename(file.originalname, extNameOriginal).replace(` `, `_`) + `_` + moment().format(`MM_DD_Y_HH_mm_ss`) + extNameOriginal;
 
         /** If the file name already exists in the attachments folder, throw error */
-        if ( fs.existsSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${newFileName}`)) )
+        if ( fs.existsSync(path.resolve(`${property.addEditConfig.path}/../${property.addEditConfig.folderName}/${newFileName}`)) )
           throw new req.StrappedError().color(`danger`).cols(4).strong(`Error:`).text(`This file name already exists!.`);
 
         /** If the size of the file is greater than 10 MB, throw error */
@@ -348,13 +346,13 @@ const assignInput = (property, value, data, files, previousValue, constants) => 
           throw new req.StrappedError().color(`danger`).cols(4).strong(`Error:`).text(`The size of the file ${path.basename(file.originalname)}, is greater than 10 MB (${numeral(file.size / 1024 / 1024).format(0)} MB)!.`);
 
         /** Rename the file from the temporary path to the new path */
-        fs.renameSync(path.resolve(`C:/shreveport/${property.addEditConfig.folderName}/../${file.path}`), path.resolve(`C:/shreveport/${property.addEditConfig.folderName}/${newFileName}`));
+        fs.renameSync(path.resolve(`${property.addEditConfig.path}/${property.addEditConfig.folderName}/../${file.path}`), path.resolve(`${property.addEditConfig.path}/${property.addEditConfig.folderName}/${newFileName}`));
 
         /** Add new file name to array */
         return newFileName;
       } else if ( data.a == `editRecord` && typeof files[property.name] != `object` && Object.keys(files).length != 0 ) {
         if ( previousValue.length > 0 && data.a == `editRecord` )
-          fs.unlinkSync(path.resolve(`C:/shreveport/../${property.addEditConfig.folderName}/${previousValue}`));
+          fs.unlinkSync(path.resolve(`${property.addEditConfig.path}/../${property.addEditConfig.folderName}/${previousValue}`));
 
         return ``;
       }
