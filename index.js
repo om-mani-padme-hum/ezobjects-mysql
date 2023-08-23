@@ -489,7 +489,7 @@ const ezobjectTypes = [
   { type: `boolean`, jsType: `boolean`, mysqlType: `tinyint`, default: false, setTransform: setTransform, saveTransform: x => x ? 1 : 0, loadTransform: x => x ? true: false, save: x => x == constants.TRUE ? true : false, validateInput: validateInput, assignInput: assignInput },
   { type: `function`, jsType: `function`, mysqlType: `text`, default: function () {}, setTransform: setTransform, saveTransform: x => x.toString(), loadTransform: x => eval(x) },
   { type: `object`, jsType: `Object`, mysqlType: `text`, default: {}, setTransform: setTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x), validateInput: validateInput, assignInput: assignInput },
-  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return x; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; }, validateInput: validateInput, assignInput: assignInput },
+  { type: `other`, jsType: `object`, mysqlType: `tinytext`, default: null,  getTransform: (x, property, obj) => x._isAddonObject ? new module.exports.objects[obj.className]().init(x) : x, setTransform: setTransform, saveTransform: x => x ? `${x.constructor.name},${x.id()}` : null, loadTransform: async (x, property, db) => { if ( !x ) return null; else if ( typeof x == `object` ) return x; const data = x.split(`,`); return data.length > 0 ? await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db) : null; }, validateInput: validateInput, assignInput: assignInput },
   
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `bit`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.join(`|`)).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => Buffer.from(y.split(`|`).map(z => parseInt(z)))) },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `tinyint`, setTransform: setArrayTransform, saveTransform: x => x.join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => parseInt(y)), assignInput: setArrayInputs},
@@ -522,7 +522,7 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `boolean`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y ? 1 : 0).join(`,`), loadTransform: x => x === `` ? [] : x.split(`,`).map(y => y ? true : false), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)) },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
-  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { if ( typeof x == `object` && x.constructor.name == `Array` ) return x.map(y => new module.exports.objects[y._constructorName](y)); const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } return arr; } }
+  { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, getTransform: (x, property) => x.length > 0 && x[0]._isAddonObject ? x.map(y => new module.exports.objects[y._constructorName]().init(y)) : x, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), loadTransform: async (x, property, db) => { if ( typeof x == `object` && x.constructor.name == `Array` ) return x.map(y => new module.exports.objects[y._constructorName](y)); const arr = []; for ( let i = 0, list = x === `` ? [] : x.split(`|`), i_max = list.length; i < i_max; i++ ) { const data = list[i].split(`,`); arr.push(await (new module.exports.objects[data[0]]()).load(parseInt(data[1]), db)); } return arr; } }
 ];
 
 /** 
@@ -1018,8 +1018,8 @@ const createClass = (obj) => {
     module.exports.objects[obj.className].prototype[property.name] = function (arg) {
       /** Getter */
       if ( arg === undefined ) 
-        return this[`_${property.name}`]; 
-            
+        return typeof property.getTransform == `function` ? property.getTransform(this[`_${property.name}`], property) : this[`_${property.name}`];
+      
       /** Setter */
       this[`_${property.name}`] = property.setTransform(arg, property); 
       
