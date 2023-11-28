@@ -523,32 +523,34 @@ const ezobjectTypes = [
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `function`, setTransform: setArrayTransform, saveTransform: x => x.map(y => y.toString()).join(`!&|&!`), loadTransform: x => x === `` ? [] : x.split(`!&|&!`).map(y => eval(y)), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `mediumtext`, default: [], arrayOfType: `object`, setTransform: setArrayTransform, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x), assignInput: setArrayInputs },
   { type: `array`, jsType: `Array`, mysqlType: `text`, default: [], arrayOfType: `other`, getTransform: (x, property) => x.length > 0 && x[0]._isAddonObject ? x.map(y => new module.exports.objects[y._constructorName]().init(y)) : x, setTransform: setArrayTransform, saveTransform: x => x.map(y => `${y.constructor.name},${y.id()}`).join(`|`), 
-   loadTransform: async (x, property, db, tableName) => { 
-     if ( typeof x == `object` && x.constructor.name == `Array` ) 
-       return x.map(y => new module.exports.objects[y._constructorName](y)); 
-     
-     const arr = []; 
-     const parts = x.split(`|`).filter(x => x != ``).map(y => y.split(`,`));
-     const constructors = parts.map(y => y[0]);
-     const objectIds = parts.map(y => parseInt(y[1]));
-     
-     const constructorName = x[0]._constructorName;
-     const constructorNameRegex = new RegExp(`/^${constructorName},/`);
-     const allObjectsSame = parts.every(x => x.match(constructorNameRegex));
-     
-     if ( allObjectsSame ) {
-       const results = await db.awaitQuery(`SELECT * FROM ${tableName} WHERE id IN (?)`, [objectIds]);
-       
-       for ( const row of results )
-         arr.push(await (new module.exports.objects[constructorName]()).load(row, db)); 
-     } else {
-       for ( let i = 0, i_max = objectIds.length; i < i_max; i++ )
-         arr.push(await (new module.exports.objects[constructors[i]]()).load(objectIds[i], db)); 
-     }
+    loadTransform: async (x, property, db, tableName) => { 
+      if ( typeof x == `object` && x.constructor.name == `Array` ) 
+        return x.map(y => new module.exports.objects[y._constructorName](y)); 
+    
+      const arr = []; 
+      const parts = x.split(`|`).filter(x => x != ``).map(y => y.split(`,`));
+      const constructors = parts.map(y => y[0]);
+      const objectIds = parts.map(y => parseInt(y[1]));
+    
+      if ( x.length > 0 ) {
+        const constructorName = x[0]._constructorName;
+        const constructorNameRegex = new RegExp(`/^${constructorName},/`);
+        const allObjectsSame = constructors.every(x => x.match(constructorNameRegex));
+      
+        if ( allObjectsSame ) {
+          const results = await db.awaitQuery(`SELECT * FROM ${tableName} WHERE id IN (?)`, [objectIds]);
+        
+          for ( const row of results )
+            arr.push(await (new module.exports.objects[constructorName]()).load(row, db)); 
+        } else {
+          for ( let i = 0, i_max = objectIds.length; i < i_max; i++ )
+            arr.push(await (new module.exports.objects[constructors[i]]()).load(objectIds[i], db)); 
+        }
+      }
 
-     return arr; 
-   }, 
-   assignInput: setArrayInputs
+      return arr; 
+    }, 
+    assignInput: setArrayInputs
   }
 ];
 
