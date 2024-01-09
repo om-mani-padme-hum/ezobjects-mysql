@@ -325,7 +325,7 @@ const assignInput = (property, value, data, files, previousValue) => {
         const file = files[property.name][0];
 
         if ( previousValue.length > 0 && data.a == `editRecord` || ( data.action == constants.editOptions.KEEP_REVISION && data.a == `editRecord`) )
-          fs.unlinkSync(path.resolve(`${property.addEditConfig.path}/../${property.addEditConfig.folderName}/${previousValue}`));
+          fs.unlinkSync(path.resolve(`${property.addEditConfig.path}/${property.addEditConfig.folderName}/${previousValue}`));
 
         /** Determine original and lower case extension */
         const extNameOriginal = path.extname(file.originalname);
