@@ -33,7 +33,6 @@
   "author": "Rich Lowe",
   "license": "MIT",
   "dependencies": {
-    "docket-parser": "^0.7.6",
     "moment": "^2.29.3",
     "mysql": "^2.18.1",
     "mysql-await": "^2.1.8"
